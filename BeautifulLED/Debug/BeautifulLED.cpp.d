@@ -1,0 +1,23 @@
+C:\Users\ChengTao\AppData\Local\Temp\VMicroBuilds\BeautifulLED\mega_atmega2560\BeautifulLED.cpp.o: \
+ C:\Users\ChengTao\AppData\Local\Temp\VMicroBuilds\BeautifulLED\mega_atmega2560\BeautifulLED.cpp \
+ D:\SoftWare\Arduino\hardware\arduino\avr\cores\arduino/arduino.h \
+ D:\SoftWare\Arduino\hardware\arduino\avr\cores\arduino/binary.h \
+ D:\SoftWare\Arduino\hardware\arduino\avr\cores\arduino/WCharacter.h \
+ D:\SoftWare\Arduino\hardware\arduino\avr\cores\arduino/WString.h \
+ D:\SoftWare\Arduino\hardware\arduino\avr\cores\arduino/HardwareSerial.h \
+ D:\SoftWare\Arduino\hardware\arduino\avr\cores\arduino/Stream.h \
+ D:\SoftWare\Arduino\hardware\arduino\avr\cores\arduino/Print.h \
+ D:\SoftWare\Arduino\hardware\arduino\avr\cores\arduino/Printable.h \
+ D:\SoftWare\Arduino\hardware\arduino\avr\cores\arduino/USBAPI.h \
+ D:\SoftWare\Arduino\hardware\arduino\avr\cores\arduino/Arduino.h \
+ D:\SoftWare\Arduino\hardware\arduino\avr\variants\mega/pins_arduino.h \
+ D:\SoftWare\Arduino\libraries\FastSPI_LED2/FastSPI_LED2.h \
+ D:\SoftWare\Arduino\libraries\FastSPI_LED2/controller.h \
+ D:\SoftWare\Arduino\libraries\FastSPI_LED2/fastpin.h \
+ D:\SoftWare\Arduino\hardware\arduino\avr\cores\arduino/Arduino.h \
+ D:\SoftWare\Arduino\libraries\FastSPI_LED2/fastspi.h \
+ D:\SoftWare\Arduino\libraries\FastSPI_LED2/clockless.h \
+ D:\SoftWare\Arduino\libraries\FastSPI_LED2/fastspi.h \
+ D:\SoftWare\Arduino\libraries\FastSPI_LED2/fastpin.h \
+ D:\SoftWare\Arduino\libraries\FastSPI_LED2/controller.h \
+ D:\SoftWare\Arduino\libraries\FastSPI_LED2/clockless.h
