@@ -73,9 +73,6 @@ long randomColors[DEFAULT_RANDOM_COLOR_NUMS] =
 0x00FFFF,0xFFFF00,0x660066,
 0xFF00CC,0xFFAB00,0x0009FF,
 0xFF8000};
-//long red[1] = {0xFF0000};
-//long green[1] = {0x00FF00};
-//long blue[1] = {0x0000FF};
 long color1[1] = { 0 };
 long color2[1] = { 0 };
 long color3[1] = { 0 };
@@ -103,7 +100,6 @@ void setup() {
 	initEveryLEDSection();
 }
 
-// the loop function runs over and over again until power down or reset
 void loop() {
 	if (Serial.available() > 0)
 	{
@@ -195,20 +191,6 @@ void startLED(int delayTime) {
 			for (int j = ledSections[i].colorArrayLength - 1; j >= 0; j--)//循环颜色数组长度
 			{
 				CRGB rgb = getRGBFromColor(ledSections[i].colorArray[j]);
-				/*if (i > 2)
-				{
-					Serial.print("color===");
-					Serial.print(i);
-					Serial.print("===");
-					Serial.println(ledSections[i].colorArray[j]);
-					Serial.print("r===");
-					Serial.println(rgb.r);
-					Serial.print("g===");
-					Serial.println(rgb.g);
-					Serial.print("b===");
-					Serial.println(rgb.b);
-					Serial.println("done");
-				}*/
 				for (int k = 0; k < ledSections[i].colorNumsArray[j]; k++)//循环每段颜色的长度
 				{
 					int position = ledSections[i].currentPositon + throughLEDNums;
