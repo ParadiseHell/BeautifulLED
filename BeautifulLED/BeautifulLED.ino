@@ -14,7 +14,7 @@
 //---------------常量--------------
 #define TOTAL_LED_NUMS 62//总灯点数
 #define OUTPUT_PORT 9//输出端口
-#define TOTAL_SECTION_NUMS 13//一条灯带能同时显示的灯段数
+#define TOTAL_SECTION_NUMS 14//一条灯带能同时显示的灯段数
 #define DEFAULT_COLOR_LIGHTNESS 3//默认整体灯带的亮度
 #define DEFAULT_DELAY_TIME 60//默认暂停时间
 
@@ -26,7 +26,7 @@
 #define DEFAULT_WATER_LED_COLOR_NUMS 1//默认的流水LED灯颜色个数
 #define DEFAULT_WATER_LED_OFF_NUMS 1//默认的流水LED灯熄灭个数
 #define DEFAULT_WATER_LED_BREAK 9//每个默认白色段之间的间隙
-#define DEFAULT_WATER_LED_SECTION_NUMS 3//默认白色段的个数
+#define DEFAULT_WATER_LED_SECTION_NUMS 4//默认白色段的个数
 
 //默认随机颜色段
 #define DEFAULT_TOATAL_RANDOM_COLOR_NUMS 1//颜色个数
@@ -44,6 +44,8 @@ struct LEDSection
 	int ledNums;//每段的灯点数
 	int* lightnessArray;//亮度数组
 	boolean isUsing;//标志位，记录是否在使用
+	boolean isNew;//标志位，记录该灯段是否是新产生的
+	boolean isInitOK;//标志位，记录该灯段是否初始化成功
 };
 
 //-----------颜色结构体-------------
@@ -92,7 +94,10 @@ int ledNums = DEFAULT_RANDOM_LED_NUMS;
 int lightness[DEFAULT_RANDOM_LED_NUMS] = {100,100,100,100,100,100};
 int offLedNums = DEFAULT_RANDOM_OFF_LED_NUMS;
 
-int number = 0;
+//标志白色灯段最开始一段是否初始化好
+boolean isWriteFirstSectionInitOK = false;
+//标志随机灯段最开始一段是否初始化好
+boolean isRandomSectionInitOK = false;
 
 void setup() {
 	LED.init();
@@ -116,12 +121,21 @@ void initEveryLEDSection() {
 	for (int i = 0; i < TOTAL_SECTION_NUMS; i++)
 	{
 		ledSections[i].currentPositon = 0;
+		ledSections[i].isNew = false;
 		//第一个和最后一个为默认的流水性灯段
 		if (i < DEFAULT_WATER_LED_SECTION_NUMS)
 		{
 			if (i > 0)
 			{
 				ledSections[i].currentPositon = ledSections[i - 1].currentPositon + DEFAULT_WATER_LED_NUMS + DEFAULT_WATER_LED_BREAK;
+			}
+			if (ledSections[i].currentPositon - DEFAULT_WATER_LED_NUMS -DEFAULT_WATER_LED_BREAK + 1 >= 0)
+			{
+				ledSections[i].isInitOK = true;
+			}
+			else
+			{
+				ledSections[i].isInitOK = false;
 			}
 			ledSections[i].colorArrayLength = DEFAULT_WATER_LED_COLOR_NUMS;
 			ledSections[i].colorArray = defaultWaterColorArray;
@@ -135,34 +149,34 @@ void initEveryLEDSection() {
 			ledSections[i].colorArrayLength = colorLength;
 			switch (i)
 			{
-			case 3:
+			case 4:
 				ledSections[i].colorArray = color1;
 				break;
-			case 4:
+			case 5:
 				ledSections[i].colorArray = color2;
 				break;
-			case 5:
+			case 6:
 				ledSections[i].colorArray = color3;
 				break;
-			case 6:
+			case 7:
 				ledSections[i].colorArray = color4;
 				break;
-			case 7:
+			case 8:
 				ledSections[i].colorArray = color5;
 				break;
-			case 8:
+			case 9:
 				ledSections[i].colorArray = color6;
 				break;
-			case 9:
+			case 10:
 				ledSections[i].colorArray = color7;
 				break;
-			case 10:
+			case 11:
 				ledSections[i].colorArray = color8;
 				break;
-			case 11:
+			case 12:
 				ledSections[i].colorArray = color9;
 				break;
-			case 12:
+			case 13:
 				ledSections[i].colorArray = color10;
 				break;
 			default:
@@ -173,7 +187,8 @@ void initEveryLEDSection() {
 			ledSections[i].ledNums = ledNums;
 			ledSections[i].lightnessArray = lightness;
 			ledSections[i].isUsing = false;
-		}		
+			ledSections[i].isInitOK = false;
+		}	
 	}
 }
 
@@ -190,6 +205,25 @@ void startLED(int delayTime) {
 		{
 			for (int j = ledSections[i].colorArrayLength - 1; j >= 0; j--)//循环颜色数组长度
 			{
+				//判断新产生的白色灯段是否可以初始化
+				//-----------开始----------------
+				if (i < DEFAULT_WATER_LED_SECTION_NUMS)
+				{
+					if (ledSections[i].isNew)
+					{
+						int next = i + 1;
+						if (next == DEFAULT_WATER_LED_SECTION_NUMS)
+						{
+							next = 0;
+						}
+						if (!ledSections[next].isInitOK)
+						{
+							break;
+						}
+						ledSections[i].isNew = false;
+					}
+				}
+				//--------------结束-------------
 				CRGB rgb = getRGBFromColor(ledSections[i].colorArray[j]);
 				for (int k = 0; k < ledSections[i].colorNumsArray[j]; k++)//循环每段颜色的长度
 				{
@@ -202,16 +236,40 @@ void startLED(int delayTime) {
 						throughLEDNums++;
 						ledPosition++;
 					}
+					else if (position < 0) {
+						throughLEDNums++;
+						ledPosition++;
+					}
 				}
 			}
 			throughLEDNums = 0;
-			ledSections[i].currentPositon += ledSections[i].offLedNums;
-			if (ledSections[i].currentPositon >= TOTAL_LED_NUMS)
+			if (!ledSections[i].isNew)
+			{
+				ledSections[i].currentPositon += ledSections[i].offLedNums;
+			}
+			//判断白色灯段是否初始化成功
+			//-----------开始--------------
+			if (!ledSections[i].isInitOK)
+			{
+				if (ledSections[i].currentPositon - DEFAULT_WATER_LED_NUMS - DEFAULT_WATER_LED_BREAK + 1 >= 0)
+				{
+					ledSections[i].isInitOK = true;
+				}
+			}
+			//----------结束---------------
+			if (ledSections[i].currentPositon - ledSections[i].ledNums >= TOTAL_LED_NUMS)
 			{
 				ledSections[i].currentPositon = 0;
 				if (i >= DEFAULT_WATER_LED_SECTION_NUMS)
 				{
 					ledSections[i].isUsing = false;
+					ledSections[i].isNew = false;
+					ledSections[i].isInitOK = false;
+				}
+				if (i < DEFAULT_WATER_LED_SECTION_NUMS)
+				{
+					ledSections[i].isNew = true;
+					ledSections[i].isInitOK = false;
 				}
 			}
 		}
@@ -233,6 +291,7 @@ void addSection(){
 			ledSections[i].isUsing = true;
 			int randomNum = random(0, 10);
 			ledSections[i].colorArray[0] = randomColors[randomNum];
+			ledSections[i].isNew = true;
 			break;
 		}
 	}
