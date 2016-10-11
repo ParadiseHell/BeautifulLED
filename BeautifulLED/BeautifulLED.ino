@@ -5,6 +5,7 @@
 */
 
 // the setup function runs once when you press reset or power the board
+#include <Wire.h>
 #include <FastSPI_LED2.h>
 #include <fastspi.h>
 #include <fastpin.h>
@@ -16,7 +17,7 @@
 #define OUTPUT_PORT 9//输出端口
 #define TOTAL_SECTION_NUMS 14//一条灯带能同时显示的灯段数
 #define DEFAULT_COLOR_LIGHTNESS 3//默认整体灯带的亮度
-#define DEFAULT_DELAY_TIME 60//默认暂停时间
+#define DEFAULT_DELAY_TIME 80//默认暂停时间
 
 //----------随机颜色----------------
 #define DEFAULT_RANDOM_COLOR_NUMS 10//默认的随机颜色个数
@@ -31,7 +32,7 @@
 //默认随机颜色段
 #define DEFAULT_TOATAL_RANDOM_COLOR_NUMS 1//颜色个数
 #define DEFAULT_RANDOM_LED_NUMS 6//LED个数
-#define DEFAULT_RANDOM_OFF_LED_NUMS 3//灭点的LED个数
+#define DEFAULT_RANDOM_OFF_LED_NUMS 4//灭点的LED个数
 
 //-----------每段的结构体----------
 struct LEDSection
@@ -99,18 +100,26 @@ boolean isWriteFirstSectionInitOK = false;
 //标志随机灯段最开始一段是否初始化好
 boolean isRandomSectionInitOK = false;
 
+int x = 0;
+int y = 0;
+
 void setup() {
 	LED.init();
 	Serial.begin(9600);
 	initEveryLEDSection();
+	Wire.begin(8);
+	Wire.onReceive(receiveEvent);
+}
+
+void receiveEvent(int bytes) {
+	x = Wire.read();
 }
 
 void loop() {
-	if (Serial.available() > 0)
-	{
-		Serial.read();
+	if (x != y) {
 		addSection();
 	}
+	y = x;
 	startLED(DEFAULT_DELAY_TIME);
 }
 
@@ -207,9 +216,9 @@ void startLED(int delayTime) {
 			{
 				//判断新产生的白色灯段是否可以初始化
 				//-----------开始----------------
-				if (i < DEFAULT_WATER_LED_SECTION_NUMS)
+				if (ledSections[i].isNew)
 				{
-					if (ledSections[i].isNew)
+					if (i < DEFAULT_WATER_LED_SECTION_NUMS)
 					{
 						int next = i + 1;
 						if (next == DEFAULT_WATER_LED_SECTION_NUMS)
@@ -220,8 +229,18 @@ void startLED(int delayTime) {
 						{
 							break;
 						}
-						ledSections[i].isNew = false;
 					}
+					else if (i > DEFAULT_WATER_LED_SECTION_NUMS)
+					{
+						if (ledSections[i - 1].isUsing)
+						{
+							if (!ledSections[i - 1].isInitOK)
+							{
+								break;
+							}
+						}
+					}
+					ledSections[i].isNew = false;
 				}
 				//--------------结束-------------
 				CRGB rgb = getRGBFromColor(ledSections[i].colorArray[j]);
@@ -251,10 +270,22 @@ void startLED(int delayTime) {
 			//-----------开始--------------
 			if (!ledSections[i].isInitOK)
 			{
-				if (ledSections[i].currentPositon - DEFAULT_WATER_LED_NUMS - DEFAULT_WATER_LED_BREAK + 1 >= 0)
+				if (i < DEFAULT_WATER_LED_SECTION_NUMS)
 				{
-					ledSections[i].isInitOK = true;
+					if (ledSections[i].currentPositon - DEFAULT_WATER_LED_NUMS - DEFAULT_WATER_LED_BREAK + 1 >= 0)
+					{
+						ledSections[i].isInitOK = true;
+					}
 				}
+				else 
+				{
+					//Serial.println(ledSections[i].currentPositon);
+					if (ledSections[i].currentPositon - ledSections[i].offLedNums -DEFAULT_RANDOM_LED_NUMS>= 0)
+					{
+						ledSections[i].isInitOK = true;
+					}
+				}
+				
 			}
 			//----------结束---------------
 			if (ledSections[i].currentPositon - ledSections[i].ledNums >= TOTAL_LED_NUMS)

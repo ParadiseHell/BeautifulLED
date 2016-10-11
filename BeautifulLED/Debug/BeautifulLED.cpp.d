@@ -11,6 +11,8 @@ C:\Users\ChengTao\AppData\Local\Temp\VMicroBuilds\BeautifulLED\mega_atmega2560\B
  D:\SoftWare\Arduino\hardware\arduino\avr\cores\arduino/USBAPI.h \
  D:\SoftWare\Arduino\hardware\arduino\avr\cores\arduino/Arduino.h \
  D:\SoftWare\Arduino\hardware\arduino\avr\variants\mega/pins_arduino.h \
+ D:\SoftWare\Arduino\hardware\arduino\avr\libraries\Wire/Wire.h \
+ D:\SoftWare\Arduino\hardware\arduino\avr\cores\arduino/Stream.h \
  D:\SoftWare\Arduino\libraries\FastSPI_LED2/FastSPI_LED2.h \
  D:\SoftWare\Arduino\libraries\FastSPI_LED2/controller.h \
  D:\SoftWare\Arduino\libraries\FastSPI_LED2/fastpin.h \
