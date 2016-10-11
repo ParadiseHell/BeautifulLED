@@ -193,8 +193,8 @@ void startLED(int delayTime) {
 				CRGB rgb = getRGBFromColor(ledSections[i].colorArray[j]);
 				for (int k = 0; k < ledSections[i].colorNumsArray[j]; k++)//循环每段颜色的长度
 				{
-					int position = ledSections[i].currentPositon + throughLEDNums;
-					if (position < TOTAL_LED_NUMS)
+					int position = ledSections[i].currentPositon + throughLEDNums - ledSections[i].ledNums + 1;
+					if (position >= 0 && position < TOTAL_LED_NUMS)
 					{
 						RGB[position].r = rgb.r * ledSections[i].lightnessArray[ledPosition] / 100;
 						RGB[position].g = rgb.g * ledSections[i].lightnessArray[ledPosition] / 100;
