@@ -101,26 +101,30 @@ boolean isWriteFirstSectionInitOK = false;
 boolean isRandomSectionInitOK = false;
 
 int x = 0;
-int y = 0;
 
 void setup() {
 	LED.init();
 	Serial.begin(9600);
 	initEveryLEDSection();
-	Wire.begin(8);
+	Wire.begin(2);
 	Wire.onReceive(receiveEvent);
+	Wire.onRequest(requestEvent);
 }
 
 void receiveEvent(int bytes) {
 	x = Wire.read();
+	Serial.println(x);
+	addSection();
+}
+
+void requestEvent()
+{
+	Wire.write("hello world");
 }
 
 void loop() {
-	if (x != y) {
-		addSection();
-	}
-	y = x;
 	startLED(DEFAULT_DELAY_TIME);
+	
 }
 
 /*
