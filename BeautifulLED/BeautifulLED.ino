@@ -108,7 +108,7 @@ void setup() {
 	initEveryLEDSection();
 	Wire.begin(2);
 	Wire.onReceive(receiveEvent);
-	Wire.onRequest(requestEvent);
+	//Wire.onRequest(requestEvent);
 }
 
 void receiveEvent(int bytes) {

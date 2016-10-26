@@ -7,29 +7,39 @@
 /*
 基于ESP8266WIFI模块的控制
 */
+#include <Wire.h>
+//-------------串口
 #define ESP8266_WIFI Serial1//ESP8266WIFI模块串口
 #define DEBUG_SERIAL Serial//测试串口
 #define ESP8266_WIFI_PORT 115200//ESP8266串口波特率
 #define DEBUG_SERIAL_PORT 9600//测试串口波特率
 
-#define SSID "Develop"//WIFI名字
-#define SSID_PASSWORD "ccbfudevelop"//WIFI密码
-
-#define DEFAULT_RETRY_TIME 5//重新连接次数
-
+//----------------------指令
+#define DEFAULT_RETRY_TIME 3//指令等待响应次数
+#define DEFAULT_WIFI_RETRY_TIME 5//WIFI指令等待响应次数
+#define DEFAULT_RETRY_DELAY_TIME 2000//指令等待响应的延迟时间
 #define DEFAULT_COMOND_SHORT_DELAY_TIME 70//指令发送后延迟时间（短）
 #define DEFAULT_COMOND_LONG_DELAY_TIME 2000//指令发送后延迟时间（长）
 
-#define DEFAULT_LOOP_DELAY_TIME 20//循环延迟时间
-
+//--------------数据
 #define DATA_LED_ARRAY "LED_ARRAY"//客户端发送初始化LED数组特征字符串
 #define DATA_LED_POS "LED_POS"//客户端发送指定位置LED闪烁的特征字符串
 
+//--------------模块
 String esp8266Ips[2] = { "","" };//ESP8266WIFI模块ip地址
 String recentClientIp = "";//最近连接的客户端ip地址
 
+//--------------------程序
+#define DEFAULT_LOOP_DELAY_TIME 20//loop循环延迟时间
+#define DEFAULT_ESP8266_BREAK_STR "GOT IP"//模块出现断开的特征字符
+
+//----------------WIFI信息
+#define SSID "Develop"//WIFI名字
+#define SSID_PASSWORD "ccbfudevelop"//WIFI密码
+
 void setup() {
 	initESP8266();
+	Wire.begin();
 }
 
 void loop() {
@@ -51,27 +61,16 @@ void initESP8266() {
 	{
 
 	}
-	delay(2000);
+	delay(5000);
 	if (setWIFIMode())
 	{
 		connectWIFI();
+		getESP8266IPs();
+		setMultiConnection();
+		createUDPChangeableConnection();
 	}
 }
 
-/*
-反复查看是否有数据返回
-*/
-void retryUntilData() {
-	int time = 0;
-	while (ESP8266_WIFI.available() == 0)
-	{
-		if (time == DEFAULT_RETRY_TIME)
-		{
-			break;
-		}
-		time++;
-	}
-}
 /*
 获取数据
 */
@@ -80,14 +79,15 @@ void getData(String &response) {
 	{
 		response += (char)ESP8266_WIFI.read();
 	}
+	response.trim();
+	response.toUpperCase();
 }
 
 /*
 在调试串口打印数据
 */
-void printResponse(String methodName, String response) {
-	DEBUG_SERIAL.print(methodName);
-	DEBUG_SERIAL.println(response);
+void printInfo(String response) {
+	DEBUG_SERIAL.println(response.c_str());
 }
 
 /*
@@ -95,32 +95,13 @@ void printResponse(String methodName, String response) {
 */
 boolean setWIFIMode() {
 	String response = "";
+	int retryTime = 0;
 	ESP8266_WIFI.println("AT+CWMODE=3");
 	ESP8266_WIFI.flush();
 	delay(DEFAULT_COMOND_SHORT_DELAY_TIME);
 	//
-	retryUntilData();
-	//
-	getData(response);
-	//
-	printResponse("setWIFIMode===", response);
-	//分析接受的数据
-	if (!response.equals(""))
-	{
-		response.toUpperCase();
-		if (response.indexOf("OK") != -1)
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-	}
-	else
-	{
-		return false;
-	}
+	return retryRecieveResponse(DEFAULT_RETRY_TIME, DEFAULT_RETRY_DELAY_TIME,
+		response, "OK", "setWIFIMode---");
 }
 
 /*
@@ -138,50 +119,21 @@ boolean connectWIFI() {
 	ESP8266_WIFI.flush();
 	delay(DEFAULT_COMOND_SHORT_DELAY_TIME);
 	//
-	retryUntilData();
-	//
-	getData(response);
-	//
-	printResponse("connectWIFI===", response);
-	//
-	if (response != "")
-	{
-		response.toUpperCase();
-		if (response.indexOf("OK") != -1)
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-	}
-	else
-	{
-		return false;
-	}
+	return retryRecieveResponse(DEFAULT_WIFI_RETRY_TIME, DEFAULT_RETRY_DELAY_TIME,
+		response, "OK", "connectWIFI---");
 }
 
 /*
 查看本机IP
 */
-void getESP8266IPs() {
+boolean getESP8266IPs() {
 	String response = "";
 	ESP8266_WIFI.println("AT+CIFSR");
 	ESP8266_WIFI.flush();
 	delay(DEFAULT_COMOND_SHORT_DELAY_TIME);
 	//
-	retryUntilData();
-	//
-	getData(response);
-	//
-	printResponse("getESP8266IPs===", response);
-	//
-	if (response != "")
-	{
-		response.toUpperCase();
-		response.trim();
-	}
+	return retryRecieveResponse(DEFAULT_RETRY_TIME, DEFAULT_RETRY_DELAY_TIME,
+		response, "OK", "getESP8266IPs---");
 }
 
 /*
@@ -189,32 +141,12 @@ void getESP8266IPs() {
 */
 boolean setMultiConnection() {
 	String response = "";
-	ESP8266_WIFI.println("AT+CIPMUX=1");
+	ESP8266_WIFI.println("AT+CIPMUX=0");
 	ESP8266_WIFI.flush();
 	delay(DEFAULT_COMOND_SHORT_DELAY_TIME);
 	//
-	retryUntilData();
-	//
-	getData(response);
-	//
-	printResponse("getESP8266IPs===", response);
-	//
-	if (response != "")
-	{
-		response.toUpperCase();
-		if (response.indexOf("OK") != -1)
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-	}
-	else
-	{
-		return false;
-	}
+	return retryRecieveResponse(DEFAULT_RETRY_TIME, DEFAULT_RETRY_DELAY_TIME,
+		response, "OK", "setMultiConnection---");
 }
 
 /*
@@ -226,26 +158,49 @@ boolean createUDPChangeableConnection() {
 	ESP8266_WIFI.flush();
 	delay(DEFAULT_COMOND_LONG_DELAY_TIME);
 	//
-	retryUntilData();
+	return retryRecieveResponse(DEFAULT_RETRY_TIME, DEFAULT_RETRY_DELAY_TIME,
+		response, "CONNECT", "createUDPChangeableConnection---");
+}
+
+/*
+断开 UDP 通信
+*/
+boolean disconnectUDP() {
+	String response = "";
+	ESP8266_WIFI.println("AT+CIPCLOSE");
+	ESP8266_WIFI.flush();
+	delay(DEFAULT_COMOND_LONG_DELAY_TIME);
 	//
+	return retryRecieveResponse(DEFAULT_RETRY_TIME, DEFAULT_RETRY_DELAY_TIME,
+		response, "CLOSED", "disconnectUDP---");
+}
+
+/*
+反复接受响应,并返回是否成功
+*/
+boolean retryRecieveResponse(int retryTime,int delayTime,String response,String specialStr,String methodStr) {
+	int rt = 0;
 	getData(response);
-	//
-	printResponse("createUDPChangeableConnection===", response);
-	//
-	if (response != "")
+	while (response.indexOf(specialStr) == -1)
 	{
-		response.toUpperCase();
-		if (response.indexOf("OK") != -1)
+		delay(delayTime);
+		rt++;
+		getData(response);
+		if (rt > retryTime)
 		{
-			return true;
-		}
-		else
-		{
-			return false;
+			break;
 		}
 	}
-	else
+	//
+	printInfo(response);
+	if (response.indexOf(specialStr) != -1)
 	{
+		//printInfo(response);
+		printInfo(methodStr+"success");
+		return true;
+	}
+	else {
+		printInfo(methodStr + "fail");
 		return false;
 	}
 }
@@ -262,14 +217,27 @@ void listenDataFromClient() {
 	if (response != "")
 	{
 		response.toUpperCase();
+		DEBUG_SERIAL.println(response);
 		if (response.indexOf(DATA_LED_POS) != -1)//客服端发送指定灯带闪烁
 		{
-
+			String pos = response.substring(response.indexOf(DATA_LED_POS) + 7);
+			int p = pos.toInt();
+			DEBUG_SERIAL.println(p);
+			Wire.beginTransmission(p);
+			Wire.write(1);
+			Wire.endTransmission();
 		}
 		if (response.indexOf(DATA_LED_ARRAY) != -1)//客服端发送灯带数组数据
 		{
 
 		}
+		if (response.indexOf(DEFAULT_ESP8266_BREAK_STR) != -1)//模块断开提示
+		{
+			setWIFIMode();
+			setMultiConnection();
+			createUDPChangeableConnection();
+		}
 	}
 	delay(DEFAULT_LOOP_DELAY_TIME);
 }
+
