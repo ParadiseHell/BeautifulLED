@@ -47,8 +47,8 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>D:\SoftWare\Arduino\hardware\arduino\avr\libraries\Wire;D:\SoftWare\Arduino\hardware\arduino\avr\libraries\Wire\utility;D:\SoftWare\Arduino\libraries;D:\SoftWare\Arduino\hardware\arduino\avr\libraries;C:\Users\ChengTao\Documents\Arduino\libraries;D:\SoftWare\Arduino\hardware\arduino\avr\cores\arduino;D:\SoftWare\Arduino\hardware\arduino\avr\variants\mega;D:\Study\Arduion\BeautifulLED\ESP8266WIFI\ESP8266WIFI;D:\SoftWare\Arduino\hardware\tools\avr/avr/include/;D:\SoftWare\Arduino\hardware\tools\avr//avr/include/avr/;D:\SoftWare\Arduino\hardware\tools\avr/lib\gcc\avr\4.8.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <ForcedIncludeFiles>D:\Study\Arduion\BeautifulLED\ESP8266WIFI\ESP8266WIFI\__vm\.ESP8266WIFI.vsarduino.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <AdditionalIncludeDirectories>D:\SoftWare\Arduino\hardware\arduino\avr\libraries\EEPROM;D:\SoftWare\Arduino\hardware\arduino\avr\libraries\Wire;D:\SoftWare\Arduino\hardware\arduino\avr\libraries\EEPROM\utility;D:\SoftWare\Arduino\hardware\arduino\avr\libraries\Wire\utility;D:\SoftWare\Arduino\libraries;D:\SoftWare\Arduino\hardware\arduino\avr\libraries;C:\Users\ChengTao\Documents\Arduino\libraries;D:\SoftWare\Arduino\hardware\arduino\avr\cores\arduino;D:\SoftWare\Arduino\hardware\arduino\avr\variants\mega;D:\Study\Arduion\ESP8266WIFI\ESP8266WIFI;D:\SoftWare\Arduino\hardware\arduino\avr\libraries\EEPROM;D:\SoftWare\Arduino\hardware\arduino\avr\libraries\Wire;D:\SoftWare\Arduino\libraries;D:\SoftWare\Arduino\hardware\arduino\avr\libraries;D:\SoftWare\VisualStudio\vs2015\Common7\IDE\Extensions\0sqev54s.kjs\Micro Platforms\default\debuggers;C:\Users\ChengTao\Documents\Arduino\libraries;D:\SoftWare\Arduino\hardware\arduino\avr\cores\arduino;D:\SoftWare\Arduino\hardware\arduino\avr\variants\mega;D:\SoftWare\Arduino\hardware\arduino\avr\libraries\Wire\utility;D:\SoftWare\Arduino\hardware\tools\avr/avr/include/;D:\SoftWare\Arduino\hardware\tools\avr//avr/include/avr/;D:\SoftWare\Arduino\hardware\tools\avr/lib\gcc\avr\4.8.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ForcedIncludeFiles>D:\Study\Arduion\ESP8266WIFI\ESP8266WIFI\__vm\.ESP8266WIFI.vsarduino.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
       <PreprocessorDefinitions>__AVR_ATmega2560__;F_CPU=16000000L;ARDUINO=10605;ARDUINO_AVR_MEGA2560;ARDUINO_ARCH_AVR;__cplusplus=201103L;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
@@ -87,9 +87,4 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
-  <ProjectExtensions>
-    <VisualStudio>
-      <UserProperties arduino.upload.port="COM7" />
-    </VisualStudio>
-  </ProjectExtensions>
 </Project>

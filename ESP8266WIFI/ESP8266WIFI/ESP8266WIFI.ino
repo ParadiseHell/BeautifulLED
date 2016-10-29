@@ -1,243 +1,453 @@
 /*
  Name:		ESP8266WIFI.ino
- Created:	2016/10/24 20:30:42
+ Created:	2016/10/28 23:03:49
  Author:	ChengTao
 */
-
-/*
-基于ESP8266WIFI模块的控制
-*/
+//----------串口
 #include <Wire.h>
-//-------------串口
-#define ESP8266_WIFI Serial1//ESP8266WIFI模块串口
-#define DEBUG_SERIAL Serial//测试串口
-#define ESP8266_WIFI_PORT 115200//ESP8266串口波特率
-#define DEBUG_SERIAL_PORT 9600//测试串口波特率
+#include <EEPROM.h>
+#define PRINT_SERIAL Serial//调试串口
+#define PRINT_SERIAL_PORT 9600//调试串口端口
+#define ESP8266_SERIAL Serial1//WIFI模块串口
+#define ESP8266_SERIAL_PORT 115200//WIFI模块串口端口
+//-----------初始化
+#define INIT_DELAY_TIME 5000
 
-//----------------------指令
-#define DEFAULT_RETRY_TIME 3//指令等待响应次数
-#define DEFAULT_WIFI_RETRY_TIME 5//WIFI指令等待响应次数
-#define DEFAULT_RETRY_DELAY_TIME 2000//指令等待响应的延迟时间
-#define DEFAULT_COMOND_SHORT_DELAY_TIME 70//指令发送后延迟时间（短）
-#define DEFAULT_COMOND_LONG_DELAY_TIME 2000//指令发送后延迟时间（长）
-
-//--------------数据
-#define DATA_LED_ARRAY "LED_ARRAY"//客户端发送初始化LED数组特征字符串
-#define DATA_LED_POS "LED_POS"//客户端发送指定位置LED闪烁的特征字符串
-
-//--------------模块
-String esp8266Ips[2] = { "","" };//ESP8266WIFI模块ip地址
-String recentClientIp = "";//最近连接的客户端ip地址
-
-//--------------------程序
-#define DEFAULT_LOOP_DELAY_TIME 20//loop循环延迟时间
-#define DEFAULT_ESP8266_BREAK_STR "GOT IP"//模块出现断开的特征字符
-
-//----------------WIFI信息
-#define SSID "Develop"//WIFI名字
-#define SSID_PASSWORD "ccbfudevelop"//WIFI密码
+//----------响应数据
+char responseBuffer[100] = {'\0'};
+char responseChar = '\0';
+int responsePos = 0;
+String responseStr = "";
+//---------数据特征
+/*
+客户端指令格式: CDC + 指令类型（1,2,3...） + : + 数据
+*/
+#define DATA_COMMAND_SSID 1//WIFI名称
+#define DATA_COMMAND_SSID_PASSWORD 2//WIFI密码
+#define DATA_COMMAND_IP 3//WIFI模块固定IP
+#define DATA_COMMAND_MASK 4//路由器子网掩码
+#define DATA_COMMAND_GATE 5//路由器网关
+#define DATA_COMMAND_INIT_WIFI 6//LED位置
+#define DATA_COMMAND_LED_POS 7//LED位置
+#define DATA_STOP_FLAG '#'
+int dataStyle = 0;
+int commondStyle = 0;
+bool isDataStart = false;
+int ledPos = 0;
+//-----------指令
+#define COMMAND_DAYLAY_TIME 70
+#define COMMAND_RETRY_DELAY_TIME 1000
+#define COMMAND_RETRY_MAX_TIME 5
+String cmd = "";
+String cmdSuccess = "";
+int retryTime = 0;
+boolean isCmdSuccess = false;
+//--------------网络
+char wifiBuffer[20] = {'\0'};
+int wifiPos = 0;
+char wifiChar = '\0';
+String ssid = "";
+String ssidPassword = "";
+String wifiIP = "";
+String wifiMask = "";
+String wifiGate = "";
+//------------EEPROM
+int eepromPos = 0;
+char eepromChar = '\0';
+int eepromDataNum = 0;
+bool isWriteAgain = false;
+#define EEPROM_SSID 10
+#define EEPROM_SSID_PASSWORD 25
+#define EEPROM_IP 40
+#define EEPROM_MASK 55
+#define EEPROM_GATE 70
 
 void setup() {
-	initESP8266();
-	Wire.begin();
+	initAll();
 }
 
 void loop() {
-	listenDataFromClient();
+	listen();
 }
+
 /*
 初始化
 */
-void initESP8266() {
-	//初始化调试串口
-	DEBUG_SERIAL.begin(DEBUG_SERIAL_PORT);
-	while (!DEBUG_SERIAL)
+void initAll() {
+	//初始化串口
+	PRINT_SERIAL.begin(PRINT_SERIAL_PORT);
+	ESP8266_SERIAL.begin(ESP8266_SERIAL_PORT);
+	while (!PRINT_SERIAL)
 	{
 
 	}
-	//初始化WIFI连接的硬件串口
-	ESP8266_WIFI.begin(ESP8266_WIFI_PORT);
-	while (!ESP8266_WIFI)
+	while (!ESP8266_SERIAL)
 	{
 
 	}
-	delay(5000);
-	if (setWIFIMode())
+	Wire.begin();
+	//等待WIFI模块启动
+	delay(INIT_DELAY_TIME);
+	//初始化WIFI模块
+	if (setWIFIMode())//设置WIFI模式
 	{
-		connectWIFI();
-		getESP8266IPs();
-		setMultiConnection();
-		createUDPChangeableConnection();
+		if (createUDPConnection())//创建UDP连接
+		{
+			if (initDataFromEEPROM())//初始化网络数据
+			{
+				
+			}
+		}
 	}
+	resetDataBuffer();
 }
 
 /*
-获取数据
+发送指令并判断指令响应姐结果状态
 */
-void getData(String &response) {
-	while (ESP8266_WIFI.available())
+boolean sendCmdAndGetResponseStatus() {
+	ESP8266_SERIAL.println(cmd);
+	ESP8266_SERIAL.flush();
+	delay(COMMAND_DAYLAY_TIME);
+	while (true)
 	{
-		response += (char)ESP8266_WIFI.read();
+		if (retryTime == COMMAND_RETRY_MAX_TIME)
+		{
+			break;
+		}
+		while (ESP8266_SERIAL.available())
+		{
+			responseBuffer[responsePos] = ESP8266_SERIAL.read();
+			responsePos++;
+		}
+		responseStr = responseBuffer;
+		if (responseStr.indexOf(cmdSuccess) != -1)
+		{
+			isCmdSuccess = true;
+			break;
+		}
+		retryTime++;
+		delay(COMMAND_RETRY_DELAY_TIME);
 	}
-	response.trim();
-	response.toUpperCase();
+	PRINT_SERIAL.println(responseStr);
+	return isCmdSuccess;
 }
 
 /*
-在调试串口打印数据
-*/
-void printInfo(String response) {
-	DEBUG_SERIAL.println(response.c_str());
-}
-
-/*
-设置WIFI模式，默认为3
+设置WIFI模式
 */
 boolean setWIFIMode() {
-	String response = "";
-	int retryTime = 0;
-	ESP8266_WIFI.println("AT+CWMODE=3");
-	ESP8266_WIFI.flush();
-	delay(DEFAULT_COMOND_SHORT_DELAY_TIME);
-	//
-	return retryRecieveResponse(DEFAULT_RETRY_TIME, DEFAULT_RETRY_DELAY_TIME,
-		response, "OK", "setWIFIMode---");
+	cmd = "AT+CWMODE=3";
+	cmdSuccess = "OK";
+	return sendCmdAndGetResponseStatus();
+}
+
+/*
+创建UDP连接
+*/
+boolean createUDPConnection() {
+	cmd = "AT+CIPSTART=\"UDP\",\"192.168.4.2\",8080,8080,2";
+	cmdSuccess = "CONNECT";
+	return sendCmdAndGetResponseStatus();
 }
 
 /*
 连接WIFI
 */
-boolean connectWIFI() {
-	String response = "";
-	String cmd = "";
-	cmd += "AT+CWJAP=\"";
-	cmd += SSID;
-	cmd += "\",\"";
-	cmd += SSID_PASSWORD;
-	cmd += "\"";
-	ESP8266_WIFI.println(cmd);
-	ESP8266_WIFI.flush();
-	delay(DEFAULT_COMOND_SHORT_DELAY_TIME);
-	//
-	return retryRecieveResponse(DEFAULT_WIFI_RETRY_TIME, DEFAULT_RETRY_DELAY_TIME,
-		response, "OK", "connectWIFI---");
+bool connectWIFI() {
+	cmd = "AT+CWJAP=\"" + ssid + "\",\"" + ssidPassword + "\"";
+	cmdSuccess = "CONNECTED";
+	return sendCmdAndGetResponseStatus();
 }
 
 /*
-查看本机IP
+设置固定IP
 */
-boolean getESP8266IPs() {
-	String response = "";
-	ESP8266_WIFI.println("AT+CIFSR");
-	ESP8266_WIFI.flush();
-	delay(DEFAULT_COMOND_SHORT_DELAY_TIME);
-	//
-	return retryRecieveResponse(DEFAULT_RETRY_TIME, DEFAULT_RETRY_DELAY_TIME,
-		response, "OK", "getESP8266IPs---");
+bool setStableIP() {
+	cmd = "AT+CIPSTA_DEF=\""+wifiIP + "\",\""+wifiMask+"\",\""+wifiGate+"\"";
+	cmdSuccess = "OK";
+	return sendCmdAndGetResponseStatus();
 }
 
 /*
-创建多连接
+从EEPROM读取数据
+第一位表示是否有数据 1:有 
+之后依次是：
+WIFI账号，WIFI密码，IP地址，子网掩码，网关
 */
-boolean setMultiConnection() {
-	String response = "";
-	ESP8266_WIFI.println("AT+CIPMUX=0");
-	ESP8266_WIFI.flush();
-	delay(DEFAULT_COMOND_SHORT_DELAY_TIME);
-	//
-	return retryRecieveResponse(DEFAULT_RETRY_TIME, DEFAULT_RETRY_DELAY_TIME,
-		response, "OK", "setMultiConnection---");
-}
-
-/*
-创建远端可变的 UDP 通信
-*/
-boolean createUDPChangeableConnection() {
-	String response = "";
-	ESP8266_WIFI.println("AT+CIPSTART=\"UDP\",\"192.168.4.2\",8080,8080,2");
-	ESP8266_WIFI.flush();
-	delay(DEFAULT_COMOND_LONG_DELAY_TIME);
-	//
-	return retryRecieveResponse(DEFAULT_RETRY_TIME, DEFAULT_RETRY_DELAY_TIME,
-		response, "CONNECT", "createUDPChangeableConnection---");
-}
-
-/*
-断开 UDP 通信
-*/
-boolean disconnectUDP() {
-	String response = "";
-	ESP8266_WIFI.println("AT+CIPCLOSE");
-	ESP8266_WIFI.flush();
-	delay(DEFAULT_COMOND_LONG_DELAY_TIME);
-	//
-	return retryRecieveResponse(DEFAULT_RETRY_TIME, DEFAULT_RETRY_DELAY_TIME,
-		response, "CLOSED", "disconnectUDP---");
-}
-
-/*
-反复接受响应,并返回是否成功
-*/
-boolean retryRecieveResponse(int retryTime,int delayTime,String response,String specialStr,String methodStr) {
-	int rt = 0;
-	getData(response);
-	while (response.indexOf(specialStr) == -1)
+boolean initDataFromEEPROM() {
+	if (EEPROM.read(0) == 1)
 	{
-		delay(delayTime);
-		rt++;
-		getData(response);
-		if (rt > retryTime)
+		if (EEPROM.read(1) != 255)
+		{
+			eepromDataNum = EEPROM.read(1);
+		}
+		//WIFI名称
+		for (int i = EEPROM_SSID; i < EEPROM_SSID_PASSWORD; i++)
+		{
+			if (EEPROM.read(i) == 255)
+			{
+				break;
+			}
+			wifiChar = (char)EEPROM.read(i);
+			wifiBuffer[wifiPos] = EEPROM.read(i);
+			wifiPos++;
+		}
+		PRINT_SERIAL.print("SSID:");
+		PRINT_SERIAL.println(wifiBuffer);
+		ssid = wifiBuffer;
+		resetWIFIBuffer();
+		//WIFI密码
+		for (int i = EEPROM_SSID_PASSWORD; i < EEPROM_IP; i++)
+		{
+			if (EEPROM.read(i) == 255)
+			{
+				break;
+			}
+			wifiChar = (char)EEPROM.read(i);
+			wifiBuffer[wifiPos] = EEPROM.read(i);
+			wifiPos++;
+		}
+		PRINT_SERIAL.print("SSID_PASSWORD:");
+		PRINT_SERIAL.println(wifiBuffer);
+		ssidPassword = wifiBuffer;
+		resetWIFIBuffer();
+		//IP
+		for (int i = EEPROM_IP; i < EEPROM_MASK; i++)
+		{
+			if (EEPROM.read(i) == 255)
+			{
+				break;
+			}
+			wifiChar = (char)EEPROM.read(i);
+			wifiBuffer[wifiPos] = EEPROM.read(i);
+			wifiPos++;
+		}
+		PRINT_SERIAL.print("IP:");
+		PRINT_SERIAL.println(wifiBuffer);
+		wifiIP = wifiBuffer;
+		resetWIFIBuffer();
+		//子网掩码
+		for (int i = EEPROM_MASK; i < EEPROM_GATE; i++)
+		{
+			if (EEPROM.read(i) == 255)
+			{
+				break;
+			}
+			wifiChar = (char)EEPROM.read(i);
+			wifiBuffer[wifiPos] = EEPROM.read(i);
+			wifiPos++;
+		}
+		PRINT_SERIAL.print("MASK:");
+		PRINT_SERIAL.println(wifiBuffer);
+		wifiMask = wifiBuffer;
+		resetWIFIBuffer();
+		//网关
+		for (int i = EEPROM_GATE; i < 100; i++)
+		{
+			if (EEPROM.read(i) == 255)
+			{
+				break;
+			}
+			wifiChar = (char)EEPROM.read(i);
+			wifiBuffer[wifiPos] = EEPROM.read(i);
+			wifiPos++;
+		}
+		PRINT_SERIAL.print("GATE:");
+		PRINT_SERIAL.println(wifiBuffer);
+		wifiGate = wifiBuffer;
+		resetWIFIBuffer();
+		if (connectWIFI()) {//连接WIFI
+			setStableIP();//设置固定IP
+		}
+		return true;
+	}
+	return false;
+}
+
+/*
+写入数据到EEPROM
+*/
+void writeDataToEEPROM(int posStart,int posEnd) {
+	//判断是否再次写入
+	if (EEPROM.read(posStart) != 255)
+	{
+		isWriteAgain = true;
+		resetRangeEEPROM(posStart, posEnd);
+	}
+	//写入数据
+	for (int i = posStart; i < posEnd; i++)
+	{
+		eepromChar = responseBuffer[eepromPos + 5];
+		if (eepromChar == '\0')
 		{
 			break;
 		}
+		PRINT_SERIAL.print(eepromChar);
+		EEPROM.write(i, eepromChar);
+		eepromPos++;
 	}
-	//
-	printInfo(response);
-	if (response.indexOf(specialStr) != -1)
+	PRINT_SERIAL.println();
+	//只存5组数据到EEPROM
+	if (eepromDataNum < 5) {
+		if (!isWriteAgain)//不是再次写入
+		{
+			eepromDataNum++;
+			EEPROM.write(1,eepromDataNum);
+		}		
+	}
+	if (eepromDataNum == 5)
 	{
-		//printInfo(response);
-		printInfo(methodStr+"success");
-		return true;
+		EEPROM.write(0, 1);
 	}
-	else {
-		printInfo(methodStr + "fail");
-		return false;
+	//重置EEPROM附带数据
+	eepromChar = '\0';
+	eepromPos = 0;
+	isWriteAgain = false;
+}
+
+/*
+重置某个区间的EEPROM值
+*/
+void resetRangeEEPROM(int posStart, int posEnd) {
+	for (int j = posStart; j < posEnd; j++)
+	{
+		EEPROM.write(j, 255);
 	}
 }
 
 /*
-监听从客户端发送的数据
+监听客户端和WIFI模块发出的消息
+在loop里面执行
 */
-void listenDataFromClient() {
-	String response = "";
-	while (ESP8266_WIFI.available())
+void listen() {
+	//如果有数据
+	while (ESP8266_SERIAL.available())
 	{
-		response += (char)ESP8266_WIFI.read();
+		responseChar = (char)ESP8266_SERIAL.read();
+		if (responseChar == 32 || responseChar == 19 
+			|| responseChar == 11 || responseChar == 12
+			|| responseChar == 13 || responseChar == 10){//去除特殊字符，如空格回车
+			
+		}else{
+			//获取数据类型
+			if (dataStyle == 0)//如果没有获取数据类型
+			{
+				if (responsePos == 0)
+				{
+					if (responseChar == '+')
+					{
+						dataStyle = 1;//客户端发出
+					}
+					else
+					{
+						dataStyle = 2;//WIFI模块自动发出
+					}
+				}
+			}
+			switch (dataStyle)
+			{
+			case 1://客户端发出
+				   //接受数据，知道接受到结束符
+				if (responseChar != DATA_STOP_FLAG)
+				{
+					if (isDataStart)
+					{
+						responseBuffer[responsePos] = responseChar;
+						responsePos++;
+					}
+					else
+					{
+						if (responseChar == ':')
+						{
+							isDataStart = true;
+						}
+					}
+				}
+				else
+				{
+					commondStyle = (byte)responseBuffer[3] - 48;
+					PRINT_SERIAL.println(commondStyle);
+					switch (commondStyle)
+					{
+					case DATA_COMMAND_SSID://WIFI名称
+						PRINT_SERIAL.print("SSID:");
+						PRINT_SERIAL.println(responseBuffer);
+						writeDataToEEPROM(EEPROM_SSID,EEPROM_SSID_PASSWORD);
+						break;
+					case DATA_COMMAND_SSID_PASSWORD://WIFI密码
+						PRINT_SERIAL.print("SSID_PASSWORD:");
+						PRINT_SERIAL.println(responseBuffer);
+						writeDataToEEPROM(EEPROM_SSID_PASSWORD, EEPROM_IP);
+						break;
+					case DATA_COMMAND_IP://IP
+						PRINT_SERIAL.print("IP:");
+						PRINT_SERIAL.println(responseBuffer);
+						writeDataToEEPROM(EEPROM_IP, EEPROM_MASK);
+						break;
+					case DATA_COMMAND_MASK://子网掩码
+						PRINT_SERIAL.print("MASK:");
+						PRINT_SERIAL.println(responseBuffer);
+						writeDataToEEPROM(EEPROM_MASK, EEPROM_GATE);
+						break;
+					case DATA_COMMAND_GATE://网关
+						PRINT_SERIAL.print("GATE:");
+						PRINT_SERIAL.println(responseBuffer);
+						writeDataToEEPROM(EEPROM_GATE, 100);
+						break;
+					case DATA_COMMAND_INIT_WIFI://设置WIFI
+						initDataFromEEPROM();
+						break;
+					case DATA_COMMAND_LED_POS://LED位置
+						if (responseBuffer[6] != '\0')//为两位数
+						{
+							ledPos = 10 * ((byte)(responseBuffer[5] - 48)) 
+								+ (byte)(responseBuffer[6] - 48);
+						}
+						else
+						{
+							ledPos = (byte)(responseBuffer[5] - 48);
+						}
+						PRINT_SERIAL.print("LED:");
+						PRINT_SERIAL.println(ledPos);
+						Wire.beginTransmission(ledPos);
+						Wire.write(1);
+						Wire.endTransmission();
+						break;
+					}
+					resetDataBuffer();
+				}
+				break;
+			case 2://WIFI模块自动发出
+				responseBuffer[responsePos] = responseChar;
+				responsePos++;
+				break;
+			}
+		}
 	}
-	if (response != "")
+	if (dataStyle == 2)
 	{
-		response.toUpperCase();
-		DEBUG_SERIAL.println(response);
-		if (response.indexOf(DATA_LED_POS) != -1)//客服端发送指定灯带闪烁
-		{
-			String pos = response.substring(response.indexOf(DATA_LED_POS) + 7);
-			int p = pos.toInt();
-			DEBUG_SERIAL.println(p);
-			Wire.beginTransmission(p);
-			Wire.write(1);
-			Wire.endTransmission();
-		}
-		if (response.indexOf(DATA_LED_ARRAY) != -1)//客服端发送灯带数组数据
-		{
-
-		}
-		if (response.indexOf(DEFAULT_ESP8266_BREAK_STR) != -1)//模块断开提示
-		{
-			setWIFIMode();
-			setMultiConnection();
-			createUDPChangeableConnection();
-		}
+		PRINT_SERIAL.println(responseBuffer);
+		resetDataBuffer();
 	}
-	delay(DEFAULT_LOOP_DELAY_TIME);
 }
 
+/*
+重置数据缓冲区
+*/
+void resetDataBuffer() {
+	dataStyle = 0;
+	commondStyle = 0;
+	isDataStart = false;
+	memset(responseBuffer, '\0', 100);
+	responseChar = '\0';
+	responsePos = 0;
+}
+
+/*
+存放WIFI模块相关的缓冲
+*/
+void resetWIFIBuffer() {
+	memset(wifiBuffer, '\0', 20);
+	wifiPos = 0;
+}
