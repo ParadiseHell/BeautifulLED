@@ -14,7 +14,7 @@
 
 //---------------常量--------------
 #define TOTAL_LED_NUMS 62//总灯点数
-#define OUTPUT_PORT 9//输出端口
+#define OUTPUT_PORT 8//输出端口
 #define TOTAL_SECTION_NUMS 14//一条灯带能同时显示的灯段数
 #define DEFAULT_COLOR_LIGHTNESS 3//默认整体灯带的亮度
 #define DEFAULT_DELAY_TIME 80//默认暂停时间

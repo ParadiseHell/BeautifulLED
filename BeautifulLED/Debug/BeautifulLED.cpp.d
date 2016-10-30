@@ -1,5 +1,5 @@
-C:\Users\ChengTao\AppData\Local\Temp\VMicroBuilds\BeautifulLED\mega_atmega2560\BeautifulLED.cpp.o: \
- C:\Users\ChengTao\AppData\Local\Temp\VMicroBuilds\BeautifulLED\mega_atmega2560\BeautifulLED.cpp \
+C:\Users\ChengTao\AppData\Local\Temp\VMicroBuilds\BeautifulLED\leonardo\BeautifulLED.cpp.o: \
+ C:\Users\ChengTao\AppData\Local\Temp\VMicroBuilds\BeautifulLED\leonardo\BeautifulLED.cpp \
  D:\SoftWare\Arduino\hardware\arduino\avr\cores\arduino/arduino.h \
  D:\SoftWare\Arduino\hardware\arduino\avr\cores\arduino/binary.h \
  D:\SoftWare\Arduino\hardware\arduino\avr\cores\arduino/WCharacter.h \
@@ -10,7 +10,9 @@ C:\Users\ChengTao\AppData\Local\Temp\VMicroBuilds\BeautifulLED\mega_atmega2560\B
  D:\SoftWare\Arduino\hardware\arduino\avr\cores\arduino/Printable.h \
  D:\SoftWare\Arduino\hardware\arduino\avr\cores\arduino/USBAPI.h \
  D:\SoftWare\Arduino\hardware\arduino\avr\cores\arduino/Arduino.h \
- D:\SoftWare\Arduino\hardware\arduino\avr\variants\mega/pins_arduino.h \
+ D:\SoftWare\Arduino\hardware\arduino\avr\cores\arduino/USBDesc.h \
+ D:\SoftWare\Arduino\hardware\arduino\avr\cores\arduino/USBCore.h \
+ D:\SoftWare\Arduino\hardware\arduino\avr\variants\leonardo/pins_arduino.h \
  D:\SoftWare\Arduino\hardware\arduino\avr\libraries\Wire/Wire.h \
  D:\SoftWare\Arduino\hardware\arduino\avr\cores\arduino/Stream.h \
  D:\SoftWare\Arduino\libraries\FastSPI_LED2/FastSPI_LED2.h \
