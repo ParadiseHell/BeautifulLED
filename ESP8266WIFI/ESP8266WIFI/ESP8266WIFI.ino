@@ -61,6 +61,8 @@ bool isWriteAgain = false;
 #define EEPROM_IP 40
 #define EEPROM_MASK 55
 #define EEPROM_GATE 70
+//----------异常问题
+#define WIFI_DISCONNECT "GO IP"
 
 void setup() {
 	initAll();
@@ -91,6 +93,10 @@ void initAll() {
 	//初始化WIFI模块
 	if (setWIFIMode())//设置WIFI模式
 	{
+		if (createWIFI())
+		{
+
+		}
 		if (createUDPConnection())//创建UDP连接
 		{
 			if (initDataFromEEPROM())//初始化网络数据
@@ -139,6 +145,17 @@ boolean sendCmdAndGetResponseStatus() {
 boolean setWIFIMode() {
 	cmd = "AT+CWMODE=3";
 	cmdSuccess = "OK";
+	resetDataBufferWhileSysytem();
+	return sendCmdAndGetResponseStatus();
+}
+
+/*
+创建WIFI热点，用于没有连接路由器
+*/
+bool createWIFI() {
+	cmd = "AT+CWSAP=\"BeautifulLed\",\"\",1,0";
+	cmdSuccess = "OK";
+	resetDataBufferWhileSysytem();
 	return sendCmdAndGetResponseStatus();
 }
 
@@ -148,6 +165,7 @@ boolean setWIFIMode() {
 boolean createUDPConnection() {
 	cmd = "AT+CIPSTART=\"UDP\",\"192.168.4.2\",8080,8080,2";
 	cmdSuccess = "CONNECT";
+	resetDataBufferWhileSysytem();
 	return sendCmdAndGetResponseStatus();
 }
 
@@ -157,6 +175,7 @@ boolean createUDPConnection() {
 bool connectWIFI() {
 	cmd = "AT+CWJAP=\"" + ssid + "\",\"" + ssidPassword + "\"";
 	cmdSuccess = "CONNECTED";
+	resetDataBufferWhileSysytem();
 	return sendCmdAndGetResponseStatus();
 }
 
@@ -166,6 +185,7 @@ bool connectWIFI() {
 bool setStableIP() {
 	cmd = "AT+CIPSTA_DEF=\""+wifiIP + "\",\""+wifiMask+"\",\""+wifiGate+"\"";
 	cmdSuccess = "OK";
+	resetDataBufferWhileSysytem();
 	return sendCmdAndGetResponseStatus();
 }
 
@@ -428,6 +448,11 @@ void listen() {
 	if (dataStyle == 2)
 	{
 		PRINT_SERIAL.println(responseBuffer);
+		responseStr = responseBuffer;
+		if (responseStr.indexOf(WIFI_DISCONNECT) != -1)//WIFI因为其他原因断开
+		{
+			connectWIFI();
+		}
 		resetDataBuffer();
 	}
 }
@@ -442,6 +467,17 @@ void resetDataBuffer() {
 	memset(responseBuffer, '\0', 100);
 	responseChar = '\0';
 	responsePos = 0;
+}
+
+/*
+重置数据缓冲区（系统指令）
+*/
+void resetDataBufferWhileSysytem() {
+	memset(responseBuffer, '\0', 100);
+	responseChar = '\0';
+	responsePos = 0;
+	retryTime = 0;
+	isCmdSuccess = false;
 }
 
 /*
