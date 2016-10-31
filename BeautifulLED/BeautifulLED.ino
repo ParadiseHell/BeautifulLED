@@ -104,7 +104,7 @@ int x = 0;
 
 void setup() {
 	LED.init();
-	Serial.begin(9600);
+	//Serial.begin(9600);
 	initEveryLEDSection();
 	Wire.begin(2);
 	Wire.onReceive(receiveEvent);
@@ -113,7 +113,7 @@ void setup() {
 
 void receiveEvent(int bytes) {
 	x = Wire.read();
-	Serial.println(x);
+	//Serial.println(x);
 	addSection();
 }
 

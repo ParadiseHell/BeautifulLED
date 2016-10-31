@@ -1,7 +1,7 @@
 /*
- Name:		ESP8266WIFI.ino
- Created:	2016/10/28 23:03:49
- Author:	ChengTao
+Name:		ESP8266WIFI.ino
+Created:	2016/10/28 23:03:49
+Author:	ChengTao
 */
 //----------串口
 #include <Wire.h>
@@ -14,7 +14,7 @@
 #define INIT_DELAY_TIME 5000
 
 //----------响应数据
-char responseBuffer[100] = {'\0'};
+char responseBuffer[100] = { '\0' };
 char responseChar = '\0';
 int responsePos = 0;
 String responseStr = "";
@@ -27,7 +27,7 @@ String responseStr = "";
 #define DATA_COMMAND_IP 3//WIFI模块固定IP
 #define DATA_COMMAND_MASK 4//路由器子网掩码
 #define DATA_COMMAND_GATE 5//路由器网关
-#define DATA_COMMAND_INIT_WIFI 6//LED位置
+#define DATA_COMMAND_INIT_WIFI 6//设置网络信息
 #define DATA_COMMAND_LED_POS 7//LED位置
 #define DATA_STOP_FLAG '#'
 int dataStyle = 0;
@@ -35,15 +35,13 @@ int commondStyle = 0;
 bool isDataStart = false;
 int ledPos = 0;
 //-----------指令
-#define COMMAND_DAYLAY_TIME 70
-#define COMMAND_RETRY_DELAY_TIME 1000
-#define COMMAND_RETRY_MAX_TIME 5
+#define COMMAND_EXCUTE_MAX_TIME 8000
+long cmdStartTime = 0;
 String cmd = "";
 String cmdSuccess = "";
-int retryTime = 0;
 boolean isCmdSuccess = false;
 //--------------网络
-char wifiBuffer[20] = {'\0'};
+char wifiBuffer[20] = { '\0' };
 int wifiPos = 0;
 char wifiChar = '\0';
 String ssid = "";
@@ -77,6 +75,7 @@ void loop() {
 */
 void initAll() {
 	//初始化串口
+	pinMode(13, OUTPUT);
 	PRINT_SERIAL.begin(PRINT_SERIAL_PORT);
 	ESP8266_SERIAL.begin(ESP8266_SERIAL_PORT);
 	while (!PRINT_SERIAL)
@@ -101,7 +100,7 @@ void initAll() {
 		{
 			if (initDataFromEEPROM())//初始化网络数据
 			{
-				
+
 			}
 		}
 	}
@@ -114,13 +113,9 @@ void initAll() {
 boolean sendCmdAndGetResponseStatus() {
 	ESP8266_SERIAL.println(cmd);
 	ESP8266_SERIAL.flush();
-	delay(COMMAND_DAYLAY_TIME);
+	cmdStartTime = millis();
 	while (true)
 	{
-		if (retryTime == COMMAND_RETRY_MAX_TIME)
-		{
-			break;
-		}
 		while (ESP8266_SERIAL.available())
 		{
 			responseBuffer[responsePos] = ESP8266_SERIAL.read();
@@ -132,10 +127,20 @@ boolean sendCmdAndGetResponseStatus() {
 			isCmdSuccess = true;
 			break;
 		}
-		retryTime++;
-		delay(COMMAND_RETRY_DELAY_TIME);
+		if (millis() - cmdStartTime > COMMAND_EXCUTE_MAX_TIME)
+		{
+			break;
+		}
 	}
 	PRINT_SERIAL.println(responseStr);
+	if (isCmdSuccess)
+	{
+		PRINT_SERIAL.println("T");
+	}
+	else
+	{
+		PRINT_SERIAL.println("F");
+	}
 	return isCmdSuccess;
 }
 
@@ -183,7 +188,7 @@ bool connectWIFI() {
 设置固定IP
 */
 bool setStableIP() {
-	cmd = "AT+CIPSTA_DEF=\""+wifiIP + "\",\""+wifiMask+"\",\""+wifiGate+"\"";
+	cmd = "AT+CIPSTA_CUR=\"" + wifiIP + "\",\"" + wifiGate + "\",\"" + wifiMask + "\"";
 	cmdSuccess = "OK";
 	resetDataBufferWhileSysytem();
 	return sendCmdAndGetResponseStatus();
@@ -191,7 +196,7 @@ bool setStableIP() {
 
 /*
 从EEPROM读取数据
-第一位表示是否有数据 1:有 
+第一位表示是否有数据 1:有
 之后依次是：
 WIFI账号，WIFI密码，IP地址，子网掩码，网关
 */
@@ -288,7 +293,7 @@ boolean initDataFromEEPROM() {
 /*
 写入数据到EEPROM
 */
-void writeDataToEEPROM(int posStart,int posEnd) {
+void writeDataToEEPROM(int posStart, int posEnd) {
 	//判断是否再次写入
 	if (EEPROM.read(posStart) != 255)
 	{
@@ -313,8 +318,8 @@ void writeDataToEEPROM(int posStart,int posEnd) {
 		if (!isWriteAgain)//不是再次写入
 		{
 			eepromDataNum++;
-			EEPROM.write(1,eepromDataNum);
-		}		
+			EEPROM.write(1, eepromDataNum);
+		}
 	}
 	if (eepromDataNum == 5)
 	{
@@ -345,11 +350,12 @@ void listen() {
 	while (ESP8266_SERIAL.available())
 	{
 		responseChar = (char)ESP8266_SERIAL.read();
-		if (responseChar == 32 || responseChar == 19 
+		if (responseChar == 32 || responseChar == 19
 			|| responseChar == 11 || responseChar == 12
-			|| responseChar == 13 || responseChar == 10){//去除特殊字符，如空格回车
-			
-		}else{
+			|| responseChar == 13 || responseChar == 10) {//去除特殊字符，如空格回车
+
+		}
+		else {
 			//获取数据类型
 			if (dataStyle == 0)//如果没有获取数据类型
 			{
@@ -393,7 +399,7 @@ void listen() {
 					case DATA_COMMAND_SSID://WIFI名称
 						PRINT_SERIAL.print("SSID:");
 						PRINT_SERIAL.println(responseBuffer);
-						writeDataToEEPROM(EEPROM_SSID,EEPROM_SSID_PASSWORD);
+						writeDataToEEPROM(EEPROM_SSID, EEPROM_SSID_PASSWORD);
 						break;
 					case DATA_COMMAND_SSID_PASSWORD://WIFI密码
 						PRINT_SERIAL.print("SSID_PASSWORD:");
@@ -421,7 +427,7 @@ void listen() {
 					case DATA_COMMAND_LED_POS://LED位置
 						if (responseBuffer[6] != '\0')//为两位数
 						{
-							ledPos = 10 * ((byte)(responseBuffer[5] - 48)) 
+							ledPos = 10 * ((byte)(responseBuffer[5] - 48))
 								+ (byte)(responseBuffer[6] - 48);
 						}
 						else
@@ -432,7 +438,7 @@ void listen() {
 						PRINT_SERIAL.println(ledPos);
 						Wire.beginTransmission(ledPos);
 						Wire.write(1);
-						Wire.endTransmission();
+						Wire.endTransmission(true);
 						break;
 					}
 					resetDataBuffer();
@@ -476,7 +482,6 @@ void resetDataBufferWhileSysytem() {
 	memset(responseBuffer, '\0', 100);
 	responseChar = '\0';
 	responsePos = 0;
-	retryTime = 0;
 	isCmdSuccess = false;
 }
 
@@ -486,4 +491,18 @@ void resetDataBufferWhileSysytem() {
 void resetWIFIBuffer() {
 	memset(wifiBuffer, '\0', 20);
 	wifiPos = 0;
+}
+
+/*
+自定义delay方法
+*/
+void myDelay(int time) {
+	cmdStartTime = millis();
+	while (true)
+	{
+		if (millis() - cmdStartTime > time)
+		{
+			break;
+		}
+	}
 }
