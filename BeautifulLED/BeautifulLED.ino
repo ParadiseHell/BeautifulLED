@@ -13,11 +13,12 @@
 #include <clockless.h>
 
 //---------------常量--------------
-#define TOTAL_LED_NUMS 62//总灯点数
+#define LED_IIC_POS 7
+#define TOTAL_LED_NUMS 82//总灯点数
 #define OUTPUT_PORT 8//输出端口
 #define TOTAL_SECTION_NUMS 14//一条灯带能同时显示的灯段数
 #define DEFAULT_COLOR_LIGHTNESS 3//默认整体灯带的亮度
-#define DEFAULT_DELAY_TIME 80//默认暂停时间
+#define DEFAULT_DELAY_TIME 50//默认暂停时间
 
 //----------随机颜色----------------
 #define DEFAULT_RANDOM_COLOR_NUMS 10//默认的随机颜色个数
@@ -32,7 +33,7 @@
 //默认随机颜色段
 #define DEFAULT_TOATAL_RANDOM_COLOR_NUMS 1//颜色个数
 #define DEFAULT_RANDOM_LED_NUMS 6//LED个数
-#define DEFAULT_RANDOM_OFF_LED_NUMS 4//灭点的LED个数
+#define DEFAULT_RANDOM_OFF_LED_NUMS 3//灭点的LED个数
 
 //-----------每段的结构体----------
 struct LEDSection
@@ -106,7 +107,7 @@ void setup() {
 	LED.init();
 	//Serial.begin(9600);
 	initEveryLEDSection();
-	Wire.begin(2);
+	Wire.begin(LED_IIC_POS);
 	Wire.onReceive(receiveEvent);
 	//Wire.onRequest(requestEvent);
 }
@@ -117,14 +118,13 @@ void receiveEvent(int bytes) {
 	addSection();
 }
 
-void requestEvent()
-{
-	Wire.write("hello world");
-}
+//void requestEvent()
+//{
+//	Wire.write("hello world");
+//}
 
 void loop() {
 	startLED(DEFAULT_DELAY_TIME);
-	
 }
 
 /*

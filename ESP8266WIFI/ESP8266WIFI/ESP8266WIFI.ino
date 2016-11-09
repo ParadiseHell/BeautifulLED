@@ -11,7 +11,7 @@ Author:	ChengTao
 #define ESP8266_SERIAL Serial1//WIFI模块串口
 #define ESP8266_SERIAL_PORT 115200//WIFI模块串口端口
 //-----------初始化
-#define INIT_DELAY_TIME 5000
+#define INIT_DELAY_TIME 10000
 
 //----------响应数据
 char responseBuffer[100] = { '\0' };
@@ -61,6 +61,8 @@ bool isWriteAgain = false;
 #define EEPROM_GATE 70
 //----------异常问题
 #define WIFI_DISCONNECT "GO IP"
+//----------发送信息
+int messageLength = 0;
 
 void setup() {
 	initAll();
@@ -78,17 +80,18 @@ void initAll() {
 	pinMode(13, OUTPUT);
 	PRINT_SERIAL.begin(PRINT_SERIAL_PORT);
 	ESP8266_SERIAL.begin(ESP8266_SERIAL_PORT);
-	while (!PRINT_SERIAL)
-	{
-
-	}
 	while (!ESP8266_SERIAL)
 	{
 
 	}
 	Wire.begin();
+	digitalWrite(13,LOW);
 	//等待WIFI模块启动
 	delay(INIT_DELAY_TIME);
+	while (ESP8266_SERIAL.available())
+	{
+		ESP8266_SERIAL.read();
+	}
 	//初始化WIFI模块
 	if (setWIFIMode())//设置WIFI模式
 	{
@@ -98,6 +101,7 @@ void initAll() {
 		}
 		if (createUDPConnection())//创建UDP连接
 		{
+			UPDSuccess();
 			if (initDataFromEEPROM())//初始化网络数据
 			{
 
@@ -141,6 +145,7 @@ boolean sendCmdAndGetResponseStatus() {
 	{
 		PRINT_SERIAL.println("F");
 	}
+	myDelay(200);
 	return isCmdSuccess;
 }
 
@@ -494,6 +499,18 @@ void resetWIFIBuffer() {
 }
 
 /*
+UDP创建成功标志
+*/
+void UPDSuccess() {
+	for (int i = 0; i < 5; i++)
+	{
+		digitalWrite(13,HIGH);
+		myDelay(200);
+		digitalWrite(13, LOW);
+	}
+}
+
+/*
 自定义delay方法
 */
 void myDelay(int time) {
@@ -505,4 +522,15 @@ void myDelay(int time) {
 			break;
 		}
 	}
+}
+
+/*
+发送消息给其他设备
+*/
+void sendMessageToDevice(char* message) {
+	messageLength = strlen(message);
+	cmd = "AT+CIPSEND="+messageLength;
+	ESP8266_SERIAL.println(cmd);
+	myDelay(70);
+	ESP8266_SERIAL.println(message);
 }
