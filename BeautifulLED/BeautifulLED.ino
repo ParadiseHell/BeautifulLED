@@ -13,11 +13,11 @@
 #include <clockless.h>
 
 //---------------常量--------------
-#define LED_IIC_POS 7
+#define LED_IIC_POS 7//IIC地址
 #define TOTAL_LED_NUMS 82//总灯点数
 #define OUTPUT_PORT 8//输出端口
 #define TOTAL_SECTION_NUMS 14//一条灯带能同时显示的灯段数
-#define DEFAULT_COLOR_LIGHTNESS 3//默认整体灯带的亮度
+#define DEFAULT_COLOR_LIGHTNESS 2//默认整体灯带的亮度
 #define DEFAULT_DELAY_TIME 50//默认暂停时间
 
 //----------随机颜色----------------
@@ -67,7 +67,7 @@ int static throughLEDNums = 0;//经过的灯点数
 //默认情况下白色的灯段参数
 long defaultWaterColorArray[DEFAULT_WATER_LED_COLOR_NUMS] = { 0xFFFFFF };//默认颜色数组
 int defaultWaterColorNumsArray[DEFAULT_WATER_LED_COLOR_NUMS] = { DEFAULT_WATER_LED_NUMS };//默认每个颜色的个数
-int defaultWaterColorLightnessArray[DEFAULT_WATER_LED_NUMS] = {5,10,15,20,25,30,30,25,20,15,10,5};//默认正弦流水段的亮度
+int defaultWaterColorLightnessArray[DEFAULT_WATER_LED_NUMS] = {2,4,6,8,10,12,12,10,8,6,4,2};//默认正弦流水段的亮度
 int defaultWaterColorNums = DEFAULT_WATER_LED_COLOR_NUMS;
 
 //--------------随机颜色-----------
