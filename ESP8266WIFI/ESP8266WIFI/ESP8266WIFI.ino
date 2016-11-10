@@ -20,7 +20,7 @@ int responsePos = 0;
 String responseStr = "";
 //---------数据特征
 /*
-客户端指令格式: CDC + 指令类型（1,2,3...） + : + 数据
+客户端指令格式: CDC + 指令类型（1,2,3...） + : + 数据 + #
 */
 #define DATA_COMMAND_SSID 1//WIFI名称
 #define DATA_COMMAND_SSID_PASSWORD 2//WIFI密码
