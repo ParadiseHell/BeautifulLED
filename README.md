@@ -7,21 +7,21 @@
  - [PianoView/BeautifulLED](./PianoView/BeautifulLED)（安卓APP程序[测试版]）
 
 ### 指令:
-指令格式 ： CDC + 指令类型 + : + 指令信息 + #
+指令格式 ： BL + 指令类型 + : + 指令信息 + #
 
-	CDC -- Client Direct Command 的缩写
+	BL -- Beautiful LED的缩写
 	指令类型 -- 为数字，代表不同的指令
 	: -- 提示指令信息开始
 	指令信息 -- 指令的具体内容（如WIFI名称）
 	# --结束提示符
 
-- CDC1:WIFI名字# -- 设置WIFI名字
-- CDC2:WIFI密码# -- 设置WIFI密码
-- CDC3:ip地址# -- 设置WIFI模块固定IP
-- CDC4:路由器子网掩码# -- 设置路由器子网掩码
-- CDC5:路由器网关# -- 设置路由器网关
-- CDC6:# -- 配置网络（连接WIFI、设置ip、设置子网掩码和网关）
-- CDC1:灯带的IIC地址# -- 指定特定地址的灯带发射灯段
+- CDC0:WIFI名字# -- 设置WIFI名字
+- CDC1:WIFI密码# -- 设置WIFI密码
+- CDC2:ip地址# -- 设置WIFI模块固定IP
+- CDC3:路由器子网掩码# -- 设置路由器子网掩码
+- CDC4:路由器网关# -- 设置路由器网关
+- CDC5:# -- 配置网络（连接WIFI、设置ip、设置子网掩码和网关）
+- CDC6:灯带的IIC地址# -- 指定特定地址的灯带发射灯段
 
 ### 效果图:
 - 嵌入式：

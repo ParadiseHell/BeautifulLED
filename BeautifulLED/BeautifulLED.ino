@@ -13,7 +13,7 @@
 #include <clockless.h>
 
 //---------------常量--------------
-#define LED_IIC_POS 7//IIC地址
+#define LED_IIC_POS 6//IIC地址
 #define TOTAL_LED_NUMS 82//总灯点数
 #define OUTPUT_PORT 8//输出端口
 #define TOTAL_SECTION_NUMS 14//一条灯带能同时显示的灯段数
@@ -87,6 +87,8 @@ long color7[1] = { 0 };
 long color8[1] = { 0 };
 long color9[1] = { 0 };
 long color10[1] = { 0 };
+//彩虹颜色
+long rainbowColors[7] = { 0xFF0000,0xFF7F00,0xFFFF00,0x00FF00,0x0000FF,0x4B0082,0x9400D3 };
 //struct LEDSection section[DEFAULT_RANDOM_COLOR_NUMS];
 //定义随机灯段默认属性
 long color[DEFAULT_TOATAL_RANDOM_COLOR_NUMS] = { 0 };
@@ -109,11 +111,15 @@ void setup() {
 	initEveryLEDSection();
 	Wire.begin(LED_IIC_POS);
 	Wire.onReceive(receiveEvent);
+	randomSleep();
 	//Wire.onRequest(requestEvent);
 }
 
 void receiveEvent(int bytes) {
-	x = Wire.read();
+	while (Wire.available)
+	{
+		x = Wire.read();
+	}
 	//Serial.println(x);
 	addSection();
 }
@@ -315,17 +321,27 @@ void startLED(int delayTime) {
 }
 
 /*
+随机睡眠
+*/
+void randomSleep() {
+	randomSeed(analogRead(0));
+	int randomNum = random(0, 10) * 100;
+	delay(randomNum);
+}
+
+/*
 添加灯段
 */
 void addSection(){
-	randomSeed(analogRead(0));
+	//randomSeed(analogRead(0));
 	for (int i = DEFAULT_WATER_LED_SECTION_NUMS; i < TOTAL_SECTION_NUMS; i++)
 	{
 		if (!ledSections[i].isUsing)
 		{
 			ledSections[i].isUsing = true;
-			int randomNum = random(0, 10);
-			ledSections[i].colorArray[0] = randomColors[randomNum];
+			//int randomNum = random(0, 10);
+			//ledSections[i].colorArray[0] = randomColors[randomNum];
+			ledSections[i].colorArray[0] = rainbowColors[LED_IIC_POS];
 			ledSections[i].isNew = true;
 			break;
 		}

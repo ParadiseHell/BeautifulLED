@@ -20,15 +20,16 @@ int responsePos = 0;
 String responseStr = "";
 //---------数据特征
 /*
-客户端指令格式: CDC + 指令类型（1,2,3...） + : + 数据 + #
+客户端指令格式: BL + 指令类型（0,1,2,3...） + : + 数据 + #
 */
-#define DATA_COMMAND_SSID 1//WIFI名称
-#define DATA_COMMAND_SSID_PASSWORD 2//WIFI密码
-#define DATA_COMMAND_IP 3//WIFI模块固定IP
-#define DATA_COMMAND_MASK 4//路由器子网掩码
-#define DATA_COMMAND_GATE 5//路由器网关
-#define DATA_COMMAND_INIT_WIFI 6//设置网络信息
-#define DATA_COMMAND_LED_POS 7//LED位置
+#define COMMAND_FONT_LENGTH 2
+#define DATA_COMMAND_SSID 0//WIFI名称
+#define DATA_COMMAND_SSID_PASSWORD 1//WIFI密码
+#define DATA_COMMAND_IP 2//WIFI模块固定IP
+#define DATA_COMMAND_MASK 3//路由器子网掩码
+#define DATA_COMMAND_GATE 4//路由器网关
+#define DATA_COMMAND_INIT_WIFI 5//设置网络信息
+#define DATA_COMMAND_LED_POS 6//LED位置
 #define DATA_STOP_FLAG '#'
 int dataStyle = 0;
 int commondStyle = 0;
@@ -308,7 +309,7 @@ void writeDataToEEPROM(int posStart, int posEnd) {
 	//写入数据
 	for (int i = posStart; i < posEnd; i++)
 	{
-		eepromChar = responseBuffer[eepromPos + 5];
+		eepromChar = responseBuffer[eepromPos + COMMAND_FONT_LENGTH + 2];
 		if (eepromChar == '\0')
 		{
 			break;
@@ -397,7 +398,7 @@ void listen() {
 				}
 				else
 				{
-					commondStyle = (byte)responseBuffer[3] - 48;
+					commondStyle = (byte)responseBuffer[COMMAND_FONT_LENGTH] - 48;
 					PRINT_SERIAL.println(commondStyle);
 					switch (commondStyle)
 					{
@@ -430,14 +431,14 @@ void listen() {
 						initDataFromEEPROM();
 						break;
 					case DATA_COMMAND_LED_POS://LED位置
-						if (responseBuffer[6] != '\0')//为两位数
+						if (responseBuffer[COMMAND_FONT_LENGTH + 3] != '\0')//为两位数
 						{
-							ledPos = 10 * ((byte)(responseBuffer[5] - 48))
-								+ (byte)(responseBuffer[6] - 48);
+							ledPos = 10 * ((byte)(responseBuffer[COMMAND_FONT_LENGTH + 2] - 48))
+								+ (byte)(responseBuffer[COMMAND_FONT_LENGTH + 3] - 48);
 						}
 						else
 						{
-							ledPos = (byte)(responseBuffer[5] - 48);
+							ledPos = (byte)(responseBuffer[COMMAND_FONT_LENGTH + 2] - 48);
 						}
 						PRINT_SERIAL.print("LED:");
 						PRINT_SERIAL.println(ledPos);
