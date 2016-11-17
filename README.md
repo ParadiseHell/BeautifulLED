@@ -4,7 +4,7 @@
 ### 目录结构：
  - [BeautifulLED](./BeautifulLED) （Arduino控制的灯带的程序）
  - [ESP8266WIFI](./ESP8266WIFI)（WIFI模块程序）
- - [PianoView/BeautifulLED](./PianoView/BeautifulLED)（安卓APP程序[测试版]）
+ - [App/BeautifulLED](./App/BeautifulLED)（安卓APP程序[测试版]）
 
 ### 指令:
 指令格式 ： BL + 指令类型 + : + 指令信息 + #
