@@ -21,7 +21,7 @@ import com.chengtao.beautifulled.socket.UDPSockect;
 public abstract class BaseActivity extends Activity implements UDPListener{
     protected Handler mHandler;
     protected Context mContext;
-    private UDPSockect sockect;
+    protected UDPSockect sockect;
 
 
     @Override

@@ -26,8 +26,8 @@
 ### 效果图:
 - 嵌入式：
 
-![1](./img/1.gif)
-![2](./img/2.gif)
+![1](./img/led1.gif)
+![2](./img/led2.gif)
 - 安卓：
 
-<img src="./img/1.jpg" style="width: 250px;" alt="">
+<img src="./img/android.jpg" style="width: 250px;" alt="">

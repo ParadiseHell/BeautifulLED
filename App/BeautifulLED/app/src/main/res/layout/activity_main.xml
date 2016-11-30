@@ -11,58 +11,33 @@
     android:orientation="vertical"
     tools:context="com.chengtao.beautifulled.activity.MainActivity">
 
-    <EditText
-        android:text="@string/write_service_ip"
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <EditText
+            android:layout_weight="1"
+            android:inputType="text"
+            android:text="@string/write_service_ip"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/et_service_ip"/>
+
+        <Button
+            android:text="@string/init"
+            android:id="@+id/btn_init"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+    <SeekBar
+        android:id="@+id/sb"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/et_service_ip"/>
-
-    <Button
-        android:text="@string/init"
-        android:id="@+id/btn_init"
+        android:layout_gravity="center"/>
+    <com.chengtao.pianoview.view.PianoView
+        android:layout_marginTop="10dp"
+        android:id="@+id/pv"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-    <Button
-        android:layout_marginTop="5dp"
-        android:text="DO"
-        android:id="@+id/btn_do"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-    <Button
-        android:layout_marginTop="5dp"
-        android:text="RE"
-        android:id="@+id/btn_re"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-    <Button
-        android:layout_marginTop="5dp"
-        android:text="MI"
-        android:id="@+id/btn_mi"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-    <Button
-        android:layout_marginTop="5dp"
-        android:text="FA"
-        android:id="@+id/btn_fa"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-    <Button
-        android:layout_marginTop="5dp"
-        android:text="SO"
-        android:id="@+id/btn_so"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-    <Button
-        android:layout_marginTop="5dp"
-        android:text="LA"
-        android:id="@+id/btn_la"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-    <Button
-        android:layout_marginTop="5dp"
-        android:text="SI"
-        android:id="@+id/btn_si"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-
+        android:layout_height="match_parent">
+    </com.chengtao.pianoview.view.PianoView>
 </LinearLayout>

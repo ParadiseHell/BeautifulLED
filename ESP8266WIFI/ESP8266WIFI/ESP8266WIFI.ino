@@ -103,10 +103,10 @@ void initAll() {
 		if (createUDPConnection())//创建UDP连接
 		{
 			UPDSuccess();
-			if (initDataFromEEPROM())//初始化网络数据
-			{
+			//if (initDataFromEEPROM())//初始化网络数据
+			//{
 
-			}
+			//}
 		}
 	}
 	resetDataBuffer();

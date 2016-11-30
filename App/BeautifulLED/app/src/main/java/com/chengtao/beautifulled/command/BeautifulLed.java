@@ -6,15 +6,15 @@ package com.chengtao.beautifulled.command;
 
 public class BeautifulLed {
     //-------------------指令
-    private static final String COMMAND_PRESS = "CDC";
+    private static final String COMMAND_PRESS = "BL";
     private static final String COMMAND_END = "#";
-    private static final String WIFI_SSID = COMMAND_PRESS + 1 + ":";
-    private static final String WIFI_PASSWORD = COMMAND_PRESS + 2+ ":";
-    private static final String WIFI_IP = COMMAND_PRESS + 3+ ":";
-    private static final String WIFI_MASK = COMMAND_PRESS + 4+ ":";
-    private static final String WIFI_GATE = COMMAND_PRESS + 5+ ":";
-    private static final String WIFI_INIT = COMMAND_PRESS + 6+ ":";
-    private static final String LED = COMMAND_PRESS + 7+ ":";
+    private static final String WIFI_SSID = COMMAND_PRESS + 0 + ":";
+    private static final String WIFI_PASSWORD = COMMAND_PRESS + 1+ ":";
+    private static final String WIFI_IP = COMMAND_PRESS + 2+ ":";
+    private static final String WIFI_MASK = COMMAND_PRESS + 3+ ":";
+    private static final String WIFI_GATE = COMMAND_PRESS + 4+ ":";
+    private static final String WIFI_INIT = COMMAND_PRESS + 5+ ":";
+    private static final String LED = COMMAND_PRESS + 6+ ":";
 
     public static String getWifiSsid() {
         return WIFI_SSID;
