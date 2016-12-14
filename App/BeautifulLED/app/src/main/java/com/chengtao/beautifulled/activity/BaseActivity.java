@@ -2,6 +2,7 @@ package com.chengtao.beautifulled.activity;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.PersistableBundle;
@@ -23,9 +24,13 @@ public abstract class BaseActivity extends Activity implements UDPListener{
     protected Context mContext;
     protected UDPSockect sockect;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        if (isOrientationLandscape()){
+            if(getRequestedOrientation()!= ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE){
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+            }
+        }
         super.onCreate(savedInstanceState);
         mContext = this;
         mHandler = new Handler();
@@ -63,6 +68,9 @@ public abstract class BaseActivity extends Activity implements UDPListener{
 
     abstract protected void setListener();
 
+    abstract protected boolean isOrientationLandscape();
+
+    @SuppressWarnings("unchecked")
     protected <T extends View> T getView(int id){
         return (T) findViewById(id);
     }

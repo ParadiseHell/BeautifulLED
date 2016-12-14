@@ -1,56 +1,32 @@
 package com.chengtao.beautifulled.activity;
 
-import android.content.pm.ActivityInfo;
-import android.os.Bundle;
-import android.os.Handler;
-import android.util.Log;
+import android.support.v7.app.AlertDialog;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.SeekBar;
 
 import com.chengtao.beautifulled.R;
+import com.chengtao.beautifulled.command.BeautifulLed;
 import com.chengtao.beautifulled.command.LEDPositionCommand;
-import com.chengtao.beautifulled.socket.UDPSockect;
 import com.chengtao.pianoview.entity.Piano;
 import com.chengtao.pianoview.impl.OnLoadAudioListener;
 import com.chengtao.pianoview.impl.OnPianoClickListener;
 import com.chengtao.pianoview.view.PianoView;
+import com.dinuscxj.progressbar.CircleProgressBar;
 
 public class MainActivity extends BaseActivity implements View.OnClickListener,OnPianoClickListener,OnLoadAudioListener,SeekBar.OnSeekBarChangeListener{
     //---------------控件
-    private EditText etIp;
-    private Button btnInit;
     private SeekBar seekBar;
     private PianoView pianoView;
+    private CircleProgressBar progressBar;
     //--------------指令
     private LEDPositionCommand ledPositionCommand;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        if(getRequestedOrientation()!= ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE){
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-        }
-        super.onCreate(savedInstanceState);
-        mContext = this;
-        mHandler = new Handler();
-        sockect = new UDPSockect(this);
-        if (getLayoutId() != 0){
-            setContentView(getLayoutId());
-        }
-        initView();
-        setListener();
-        initData();
-    }
+    //对话框
+    private AlertDialog dialog;
 
     @Override
     public void onClick(View view) {
-        switch (view.getId()){
-            case R.id.btn_init:
-                String ip = etIp.getText().toString();
-                initSockect(ip,8080);
-                break;
-        }
+
     }
 
     @Override
@@ -60,35 +36,45 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,O
 
     @Override
     protected void initView() {
-        etIp = getView(R.id.et_service_ip);
-        btnInit = getView(R.id.btn_init);
         seekBar = getView(R.id.sb);
         pianoView = getView(R.id.pv);
+        //初始化对话框
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        View view = LayoutInflater.from(this).inflate(R.layout.dialog_loading_audio,null);
+        progressBar = (CircleProgressBar) view.findViewById(R.id.line_progress);
+        builder.setView(view);
+        builder.setCancelable(false);
+        dialog = builder.create();
     }
 
     @Override
     protected void initData() {
+        //-------------初始化Socket
+        initSockect(BeautifulLed.WIFI_HOST_IP,8080);
+        //-------------初始化指令
         ledPositionCommand = new LEDPositionCommand();
     }
 
     @Override
     protected void setListener() {
-        btnInit.setOnClickListener(this);
         pianoView.setOnPianoClickListener(this);
         pianoView.setOnLoadMusicListener(this);
         seekBar.setOnSeekBarChangeListener(this);
     }
 
     @Override
+    protected boolean isOrientationLandscape() {
+        return true;
+    }
+
+    @Override
     public void onInitSuccess() {
         super.onInitSuccess();
-        showToast("INIT SUCCESS");
     }
 
     @Override
     public void onInitFail(Exception e) {
         super.onInitFail(e);
-        showToast("INIT FAIL");
     }
 
     @Override
@@ -118,22 +104,24 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,O
 
     @Override
     public void loadPianoAudioStart() {
-        showToast("loadPianoAudioStart");
+        dialog.show();
     }
 
     @Override
     public void loadPianoAudioFinish() {
-        showToast("loadPianoAudioFinish");
+        dialog.dismiss();
+        showToast("加载音频成功,开始你的炫酷之旅吧~~");
     }
 
     @Override
     public void loadPianoAudioError(Exception e) {
-        showToast("loadPianoAudioError:"+e.getMessage());
+        dialog.dismiss();
+        showToast("加载音频失败了诶，试试重新加载一下吧");
     }
 
     @Override
     public void loadPianoAudioProgress(int progress) {
-        showToast("loadPianoAudioProgress:"+progress);
+        progressBar.setProgress(progress);
     }
 
     @Override

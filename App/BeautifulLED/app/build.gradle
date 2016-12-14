@@ -20,5 +20,6 @@ android {
 }
 
 dependencies {
-    compile project(':pianoview')
+    compile 'com.github.ParadiseHell:PianoView:v1.1.1'
+    compile 'com.dinuscxj:circleprogressbar:1.1.1'
 }
