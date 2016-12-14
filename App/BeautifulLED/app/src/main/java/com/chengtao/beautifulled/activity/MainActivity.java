@@ -1,5 +1,11 @@
 package com.chengtao.beautifulled.activity;
 
+import android.content.Context;
+import android.content.IntentFilter;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,13 +14,14 @@ import android.widget.SeekBar;
 import com.chengtao.beautifulled.R;
 import com.chengtao.beautifulled.command.BeautifulLed;
 import com.chengtao.beautifulled.command.LEDPositionCommand;
+import com.chengtao.beautifulled.receiver.WifiStateReceiver;
 import com.chengtao.pianoview.entity.Piano;
 import com.chengtao.pianoview.impl.OnLoadAudioListener;
 import com.chengtao.pianoview.impl.OnPianoClickListener;
 import com.chengtao.pianoview.view.PianoView;
 import com.dinuscxj.progressbar.CircleProgressBar;
 
-public class MainActivity extends BaseActivity implements View.OnClickListener,OnPianoClickListener,OnLoadAudioListener,SeekBar.OnSeekBarChangeListener{
+public class MainActivity extends BaseActivity implements WifiStateReceiver.OnWifiStateListener,OnPianoClickListener,OnLoadAudioListener,SeekBar.OnSeekBarChangeListener{
     //---------------控件
     private SeekBar seekBar;
     private PianoView pianoView;
@@ -23,12 +30,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,O
     private LEDPositionCommand ledPositionCommand;
     //对话框
     private AlertDialog dialog;
-
-    @Override
-    public void onClick(View view) {
-
-    }
-
+    //WIFI状态广播
+    private WifiStateReceiver receiver;
     @Override
     protected int getLayoutId() {
         return R.layout.activity_main;
@@ -38,6 +41,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,O
     protected void initView() {
         seekBar = getView(R.id.sb);
         pianoView = getView(R.id.pv);
+        pianoView.setCanPress(false);
         //初始化对话框
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         View view = LayoutInflater.from(this).inflate(R.layout.dialog_loading_audio,null);
@@ -53,6 +57,17 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,O
         initSockect(BeautifulLed.WIFI_HOST_IP,8080);
         //-------------初始化指令
         ledPositionCommand = new LEDPositionCommand();
+        //初始化WIFI状态广播
+        initReceiver();
+    }
+
+    private void initReceiver() {
+        receiver = new WifiStateReceiver();
+        receiver.setOnWifiStateListener(this);
+        IntentFilter filter = new IntentFilter();
+        filter.addAction("android.net.wifi.WIFI_STATE_CHANGED");
+        filter.addAction("android.net.wifi.STATE_CHANGE");
+        registerReceiver(receiver,filter);
     }
 
     @Override
@@ -157,4 +172,22 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,O
                     break;
             }
     }
+
+    @Override
+    public void onGood() {
+        pianoView.setCanPress(true);
+    }
+
+    @Override
+    public void onError(String message) {
+        pianoView.setCanPress(false);
+        showToast(message);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(receiver);
+    }
+
 }
