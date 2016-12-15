@@ -30,4 +30,6 @@
 ![2](./img/led2.gif)
 - 安卓：
 
-<img src="./img/android.jpg" style="width: 250px;" alt="">
+<img src="./img/android1.jpg" style="width: 250px;" alt="">
+<br>
+<img src="./img/android2.jpg" style="width: 250px;" alt="">
