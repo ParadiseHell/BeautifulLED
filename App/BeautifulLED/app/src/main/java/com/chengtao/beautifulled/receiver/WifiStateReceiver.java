@@ -17,7 +17,7 @@ import android.util.Log;
 public class WifiStateReceiver extends BroadcastReceiver{
     private static final String TAG = "WifiStateReceiver";
     //WIFI名字
-    public static final String WIFI_NAME = "Develop";
+    public static final String WIFI_NAME = "PianoAurora";
     private OnWifiStateListener listener;
     @SuppressWarnings("ConstantConditions")
     @Override

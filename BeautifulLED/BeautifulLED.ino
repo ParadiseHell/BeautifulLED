@@ -13,7 +13,7 @@
 #include <clockless.h>
 
 //---------------常量--------------
-#define LED_IIC_POS 0//IIC地址
+#define LED_IIC_POS 6//IIC地址
 #define TOTAL_LED_NUMS 82//总灯点数
 #define OUTPUT_PORT 8//输出端口
 #define TOTAL_SECTION_NUMS 14//一条灯带能同时显示的灯段数
@@ -33,7 +33,7 @@
 //默认随机颜色段
 #define DEFAULT_TOATAL_RANDOM_COLOR_NUMS 1//颜色个数
 #define DEFAULT_RANDOM_LED_NUMS 10//LED个数
-#define DEFAULT_RANDOM_OFF_LED_NUMS 3//灭点的LED个数
+#define DEFAULT_RANDOM_OFF_LED_NUMS 5//灭点的LED个数
 
 //-----------每段的结构体----------
 struct LEDSection

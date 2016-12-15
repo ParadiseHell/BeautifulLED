@@ -7,6 +7,7 @@ package com.chengtao.beautifulled.command;
 public class BeautifulLed {
     //-------------------IP
     public static final String WIFI_HOST_IP = "192.168.4.1";
+    public static final int WIFI_HOST_PORT = 8080;
     //-------------------指令
     private static final String COMMAND_PRESS = "BL";
     private static final String COMMAND_END = "#";

@@ -1,37 +1,51 @@
 package com.chengtao.beautifulled.activity;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewTreeObserver;
+import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.SeekBar;
 
 import com.chengtao.beautifulled.R;
 import com.chengtao.beautifulled.command.BeautifulLed;
 import com.chengtao.beautifulled.command.LEDPositionCommand;
 import com.chengtao.beautifulled.receiver.WifiStateReceiver;
+import com.chengtao.beautifulled.utils.PxDpUtils;
 import com.chengtao.pianoview.entity.Piano;
 import com.chengtao.pianoview.impl.OnLoadAudioListener;
 import com.chengtao.pianoview.impl.OnPianoClickListener;
 import com.chengtao.pianoview.view.PianoView;
 import com.dinuscxj.progressbar.CircleProgressBar;
 
-public class MainActivity extends BaseActivity implements WifiStateReceiver.OnWifiStateListener,OnPianoClickListener,OnLoadAudioListener,SeekBar.OnSeekBarChangeListener{
+public class MainActivity extends BaseActivity implements View.OnClickListener,WifiStateReceiver.OnWifiStateListener,OnPianoClickListener,OnLoadAudioListener,SeekBar.OnSeekBarChangeListener{
     //---------------控件
     private SeekBar seekBar;
     private PianoView pianoView;
     private CircleProgressBar progressBar;
+    private Button leftArrow;
+    private Button rightArrow;
     //--------------指令
     private LEDPositionCommand ledPositionCommand;
     //对话框
     private AlertDialog dialog;
     //WIFI状态广播
     private WifiStateReceiver receiver;
+    //SeekBar偏移像素
+    private final static float SEEKBAR_OFFSET_SIZE = -52;
+    //左右两个按键增加和减少的进度值
+    private int scrollProgress = 0;
     @Override
     protected int getLayoutId() {
         return R.layout.activity_main;
@@ -41,7 +55,11 @@ public class MainActivity extends BaseActivity implements WifiStateReceiver.OnWi
     protected void initView() {
         seekBar = getView(R.id.sb);
         pianoView = getView(R.id.pv);
-        pianoView.setCanPress(false);
+        //初始化seekbar
+        seekBar.setThumbOffset((int)PxDpUtils.convertPixelsToDp(SEEKBAR_OFFSET_SIZE,mContext));
+        //其他
+        leftArrow = getView(R.id.iv_left_arrow);
+        rightArrow = getView(R.id.iv_right_arrow);
         //初始化对话框
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         View view = LayoutInflater.from(this).inflate(R.layout.dialog_loading_audio,null);
@@ -54,7 +72,7 @@ public class MainActivity extends BaseActivity implements WifiStateReceiver.OnWi
     @Override
     protected void initData() {
         //-------------初始化Socket
-        initSockect(BeautifulLed.WIFI_HOST_IP,8080);
+        initSockect(BeautifulLed.WIFI_HOST_IP,BeautifulLed.WIFI_HOST_PORT);
         //-------------初始化指令
         ledPositionCommand = new LEDPositionCommand();
         //初始化WIFI状态广播
@@ -75,6 +93,8 @@ public class MainActivity extends BaseActivity implements WifiStateReceiver.OnWi
         pianoView.setOnPianoClickListener(this);
         pianoView.setOnLoadMusicListener(this);
         seekBar.setOnSeekBarChangeListener(this);
+        leftArrow.setOnClickListener(this);
+        rightArrow.setOnClickListener(this);
     }
 
     @Override
@@ -180,7 +200,6 @@ public class MainActivity extends BaseActivity implements WifiStateReceiver.OnWi
 
     @Override
     public void onError(String message) {
-        pianoView.setCanPress(false);
         showToast(message);
     }
 
@@ -190,4 +209,48 @@ public class MainActivity extends BaseActivity implements WifiStateReceiver.OnWi
         unregisterReceiver(receiver);
     }
 
+    /**
+     * 本界面跳转
+     * @param activity Activity
+     */
+    public static void invoke(Activity activity){
+        Intent intent = new Intent(activity,MainActivity.class);
+        activity.startActivity(intent);
+    }
+
+    @Override
+    public void onClick(View view) {
+        if (scrollProgress == 0) {
+            try{
+                scrollProgress = (pianoView.getLayoutWidth() * 100) / pianoView.getPianoWidth();
+            }catch (Exception e){
+                showToast(e.getMessage());
+            }
+        }
+        int progress;
+        switch (view.getId()){
+            case R.id.iv_left_arrow:
+                if (scrollProgress == 0){
+                    progress = 0;
+                }else {
+                    progress = seekBar.getProgress() - scrollProgress;
+                    if (progress < 0){
+                        progress = 0;
+                    }
+                }
+                seekBar.setProgress(progress);
+                break;
+            case R.id.iv_right_arrow:
+                if (scrollProgress == 0){
+                    progress = 100;
+                }else {
+                    progress = seekBar.getProgress() + scrollProgress;
+                    if (progress > 100){
+                        progress = 100;
+                    }
+                }
+                seekBar.setProgress(progress);
+                break;
+        }
+    }
 }

@@ -1,8 +1,9 @@
 <resources>
-    <string name="app_name">BeautifulLED</string>
+    <string name="app_name">PianoAurora</string>
     <string name="send">SEND</string>
     <string name="write_some_command">write some command</string>
     <string name="write_service_ip">192.168.4.1</string>
     <string name="init">INIT</string>
     <string name="tv_loading_aduio">正在加载音频，请稍等~~</string>
+    <string name="image">image</string>
 </resources>

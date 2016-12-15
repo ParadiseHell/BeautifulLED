@@ -164,7 +164,7 @@ boolean setWIFIMode() {
 创建WIFI热点，用于没有连接路由器
 */
 bool createWIFI() {
-	cmd = "AT+CWSAP=\"BeautifulLed\",\"\",1,0";
+	cmd = "AT+CWSAP=\"PianoAurora\",\"\",1,0";
 	cmdSuccess = "OK";
 	resetDataBufferWhileSysytem();
 	return sendCmdAndGetResponseStatus();

@@ -7,7 +7,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.PersistableBundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.widget.Toast;
 
 import com.chengtao.beautifulled.R;
@@ -36,7 +38,6 @@ public abstract class BaseActivity extends Activity implements UDPListener{
         mHandler = new Handler();
         sockect = new UDPSockect(this);
         if (getLayoutId() != 0){
-            Log.e("TAG",getLayoutId()+"");
             setContentView(getLayoutId());
         }
         initView();
@@ -103,4 +104,5 @@ public abstract class BaseActivity extends Activity implements UDPListener{
     public void onRecieve(int id, String response) {
 
     }
+
 }
