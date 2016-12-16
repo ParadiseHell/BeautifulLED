@@ -17,8 +17,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <!--主界面-->
-        <activity android:name=".activity.MainActivity"/>
+        <!--钢琴控制界面-->
+        <activity android:name=".activity.PianoControlActivity"/>
         <!--WIFI状态广播-->
         <receiver android:name=".receiver.WifiStateReceiver">
         </receiver>

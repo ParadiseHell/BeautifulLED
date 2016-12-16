@@ -10,6 +10,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewTreeObserver;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.chengtao.beautifulled.R;
@@ -34,6 +36,13 @@ public abstract class BaseActivity extends Activity implements UDPListener{
             }
         }
         super.onCreate(savedInstanceState);
+        if (isFullScreen()){
+            //取消标题
+            requestWindowFeature(Window.FEATURE_NO_TITLE);
+            //取消状态栏
+            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                    WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        }
         mContext = this;
         mHandler = new Handler();
         sockect = new UDPSockect(this);
@@ -69,7 +78,13 @@ public abstract class BaseActivity extends Activity implements UDPListener{
 
     abstract protected void setListener();
 
-    abstract protected boolean isOrientationLandscape();
+    protected boolean isOrientationLandscape(){
+        return false;
+    }
+
+    protected boolean isFullScreen(){
+        return false;
+    }
 
     @SuppressWarnings("unchecked")
     protected <T extends View> T getView(int id){

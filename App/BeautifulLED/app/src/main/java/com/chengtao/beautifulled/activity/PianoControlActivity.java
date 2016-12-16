@@ -1,21 +1,17 @@
 package com.chengtao.beautifulled.activity;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.net.wifi.WifiInfo;
-import android.net.wifi.WifiManager;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewTreeObserver;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.SeekBar;
 
 import com.chengtao.beautifulled.R;
@@ -26,10 +22,21 @@ import com.chengtao.beautifulled.utils.PxDpUtils;
 import com.chengtao.pianoview.entity.Piano;
 import com.chengtao.pianoview.impl.OnLoadAudioListener;
 import com.chengtao.pianoview.impl.OnPianoClickListener;
+import com.chengtao.pianoview.impl.OnPianoDrawFinishListener;
 import com.chengtao.pianoview.view.PianoView;
 import com.dinuscxj.progressbar.CircleProgressBar;
 
-public class MainActivity extends BaseActivity implements View.OnClickListener,WifiStateReceiver.OnWifiStateListener,OnPianoClickListener,OnLoadAudioListener,SeekBar.OnSeekBarChangeListener{
+/**
+ * 钢琴控制界面
+ */
+public class PianoControlActivity extends BaseActivity implements View.OnClickListener,WifiStateReceiver.OnWifiStateListener,OnPianoClickListener,OnLoadAudioListener,SeekBar.OnSeekBarChangeListener,OnPianoDrawFinishListener{
+    //--------------常量
+    //钢琴视图图片总的宽度
+    private static final int IMAGE_PIANO_BAR_TOTAL_WIDTH = 592;
+    //钢琴视图图片左边偏移量（实际的钢琴开始位置）
+    private static final int IMAGE_PIANO_BAR_OFFSET_WIDTH = 33;
+    //seekbar拇指图片默认和背景偏移的dp值
+    private static final float SEEKBAR_THUMB_DEFULT_OFFSET_DP = 14f;
     //---------------控件
     private SeekBar seekBar;
     private PianoView pianoView;
@@ -42,22 +49,18 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,W
     private AlertDialog dialog;
     //WIFI状态广播
     private WifiStateReceiver receiver;
-    //SeekBar偏移像素
-    private final static float SEEKBAR_OFFSET_SIZE = -52;
     //左右两个按键增加和减少的进度值
     private int scrollProgress = 0;
     @Override
     protected int getLayoutId() {
-        return R.layout.activity_main;
+        return R.layout.activity_piano_control;
     }
 
     @Override
     protected void initView() {
+        Log.e("TAG","initView");
         seekBar = getView(R.id.sb);
         pianoView = getView(R.id.pv);
-        //初始化seekbar
-        seekBar.setThumbOffset((int)PxDpUtils.convertPixelsToDp(SEEKBAR_OFFSET_SIZE,mContext));
-        //其他
         leftArrow = getView(R.id.iv_left_arrow);
         rightArrow = getView(R.id.iv_right_arrow);
         //初始化对话框
@@ -92,6 +95,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,W
     protected void setListener() {
         pianoView.setOnPianoClickListener(this);
         pianoView.setOnLoadMusicListener(this);
+        pianoView.setDrawFinishListener(this);
         seekBar.setOnSeekBarChangeListener(this);
         leftArrow.setOnClickListener(this);
         rightArrow.setOnClickListener(this);
@@ -99,6 +103,11 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,W
 
     @Override
     protected boolean isOrientationLandscape() {
+        return true;
+    }
+
+    @Override
+    protected boolean isFullScreen() {
         return true;
     }
 
@@ -214,7 +223,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,W
      * @param activity Activity
      */
     public static void invoke(Activity activity){
-        Intent intent = new Intent(activity,MainActivity.class);
+        Intent intent = new Intent(activity,PianoControlActivity.class);
         activity.startActivity(intent);
     }
 
@@ -252,5 +261,31 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,W
                 seekBar.setProgress(progress);
                 break;
         }
+    }
+
+    @Override
+    public void pianoDrawFinish() {
+        Log.e("TAG","pianoDrawFinish");
+        //获取钢琴视图在手机上的宽度
+        int pianobarTotalWidth = seekBar.getWidth() - seekBar.getPaddingLeft() - seekBar.getPaddingRight();
+        Log.e("TAG","pianobarTotalWidth------"+pianobarTotalWidth);
+        //获取钢琴视图在手机上的缩放
+        float pianobarScale = (float)pianobarTotalWidth / IMAGE_PIANO_BAR_TOTAL_WIDTH;
+        Log.e("TAG","pianobarScale------"+pianobarScale);
+        //获取手机上钢琴视图的实际宽度
+        int pianobarWidth = (int)(pianobarScale * (IMAGE_PIANO_BAR_TOTAL_WIDTH - 2 * IMAGE_PIANO_BAR_OFFSET_WIDTH));
+        //获取钢琴视图拇指宽度
+        int pianoThumbWith = (int)(((float) pianobarWidth / (float) pianoView.getPianoWidth()) * (float) pianoView.getLayoutWidth());
+        //设置seekbar拇指图片
+        Drawable drawable = ContextCompat.getDrawable(mContext,R.drawable.seekbar_thumb);
+        Bitmap bitmap = ((BitmapDrawable)drawable).getBitmap();
+        Drawable d = new BitmapDrawable(getResources(), Bitmap.createScaledBitmap(bitmap, pianoThumbWith, seekBar.getHeight(), true));
+        seekBar.setThumb(d);
+        //获取钢琴视图拇指资源
+        int seekbarThumbOffset = -1 * (int)(IMAGE_PIANO_BAR_OFFSET_WIDTH * pianobarScale)
+                + (int)PxDpUtils.convertDpToPixel(SEEKBAR_THUMB_DEFULT_OFFSET_DP,mContext);
+        Log.e("TAG","seekbarThumbOffset------"+seekbarThumbOffset);
+        //设置seekbar拇指图片的偏移
+        seekBar.setThumbOffset(seekbarThumbOffset);
     }
 }

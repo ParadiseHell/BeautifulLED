@@ -1,5 +1,8 @@
 package com.chengtao.beautifulled.activity;
 
+import android.view.animation.AlphaAnimation;
+import android.widget.LinearLayout;
+
 import com.chengtao.beautifulled.R;
 
 /**
@@ -11,6 +14,7 @@ import com.chengtao.beautifulled.R;
  */
 public class SplashActivity extends BaseActivity{
     private final static int DELAY_TIME = 2000;
+    private LinearLayout linearLayout;
     @Override
     protected int getLayoutId() {
         return R.layout.activity_splash;
@@ -18,7 +22,10 @@ public class SplashActivity extends BaseActivity{
 
     @Override
     protected void initView() {
-
+        linearLayout = getView(R.id.ll_splash);
+        AlphaAnimation animation = new AlphaAnimation(0f,1f);
+        animation.setDuration(DELAY_TIME);
+        linearLayout.setAnimation(animation);
     }
 
     @Override
@@ -26,8 +33,8 @@ public class SplashActivity extends BaseActivity{
         mHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                MainActivity.invoke(SplashActivity.this);
-                SplashActivity.this.overridePendingTransition(R.anim.splash_anim_in,R.anim.splash_animout);
+                PianoControlActivity.invoke(SplashActivity.this);
+                SplashActivity.this.overridePendingTransition(android.R.anim.fade_out,android.R.anim.fade_in);
                 SplashActivity.this.finish();
             }
         },DELAY_TIME);
@@ -39,7 +46,7 @@ public class SplashActivity extends BaseActivity{
     }
 
     @Override
-    protected boolean isOrientationLandscape() {
-        return false;
+    protected boolean isFullScreen() {
+        return true;
     }
 }
