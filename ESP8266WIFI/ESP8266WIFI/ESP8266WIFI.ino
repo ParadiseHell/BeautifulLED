@@ -96,17 +96,14 @@ void initAll() {
 	//初始化WIFI模块
 	if (setWIFIMode())//设置WIFI模式
 	{
-		if (createWIFI())
+		if (setLinkMode())//设置多连接
 		{
-
-		}
-		if (createUDPConnection())//创建UDP连接
-		{
-			UPDSuccess();
-			//if (initDataFromEEPROM())//初始化网络数据
-			//{
-
-			//}
+			//closeUDPConnection();
+			createWIFI();
+			if (createUDPConnection())//创建UDP连接
+			{
+				UPDSuccess();
+			}
 		}
 	}
 	resetDataBuffer();
@@ -161,6 +158,16 @@ boolean setWIFIMode() {
 }
 
 /*
+设置连接模式（多路连接）
+*/
+boolean setLinkMode() {
+	cmd = "AT+CIPMUX=1";
+	cmdSuccess = "OK";
+	resetDataBufferWhileSysytem();
+	return sendCmdAndGetResponseStatus();
+}
+
+/*
 创建WIFI热点，用于没有连接路由器
 */
 bool createWIFI() {
@@ -174,8 +181,18 @@ bool createWIFI() {
 创建UDP连接
 */
 boolean createUDPConnection() {
-	cmd = "AT+CIPSTART=\"UDP\",\"192.168.4.2\",8080,8080,2";
+	cmd = "AT+CIPSTART=4,\"UDP\",\"192.168.4.2\",8080,8080,0";
 	cmdSuccess = "CONNECT";
+	resetDataBufferWhileSysytem();
+	return sendCmdAndGetResponseStatus();
+}
+
+/*
+创建UDP连接
+*/
+boolean closeUDPConnection() {
+	cmd = "AT+CIPCLOSE";
+	cmdSuccess = "CLOSED";
 	resetDataBufferWhileSysytem();
 	return sendCmdAndGetResponseStatus();
 }
