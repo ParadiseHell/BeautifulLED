@@ -15,13 +15,17 @@
 	指令信息 -- 指令的具体内容（如WIFI名称）
 	# --结束提示符
 
-- CDC0:WIFI名字# -- 设置WIFI名字
-- CDC1:WIFI密码# -- 设置WIFI密码
-- CDC2:ip地址# -- 设置WIFI模块固定IP
-- CDC3:路由器子网掩码# -- 设置路由器子网掩码
-- CDC4:路由器网关# -- 设置路由器网关
-- CDC5:# -- 配置网络（连接WIFI、设置ip、设置子网掩码和网关）
-- CDC6:灯带的IIC地址# -- 指定特定地址的灯带发射灯段
+- BL0:WIFI名字# -- 设置WIFI名字
+- BL1:WIFI密码# -- 设置WIFI密码
+- BL2:ip地址# -- 设置WIFI模块固定IP
+- BL3:路由器子网掩码# -- 设置路由器子网掩码
+- BL4:路由器网关# -- 设置路由器网关
+- BL5:# -- 配置网络（连接WIFI、设置ip、设置子网掩码和网关）
+- BL6:灯带的IIC地址# -- 指定特定地址的灯带发射灯段
+
+### 下载(扫码)
+
+<img src="./img/code.png" style="width: 150px;" alt="">
 
 ### 效果图:
 - 嵌入式：
@@ -33,3 +37,5 @@
 <img src="./img/android1.jpg" style="width: 250px;" alt="">
 <br>
 <img src="./img/android2.jpg" style="width: 250px;" alt="">
+<br>
+<img src="./img/android3.jpg" style="width: 250px;" alt="">
