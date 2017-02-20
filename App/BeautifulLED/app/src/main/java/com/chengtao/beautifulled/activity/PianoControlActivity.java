@@ -1,5 +1,6 @@
 package com.chengtao.beautifulled.activity;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -18,18 +19,23 @@ import com.chengtao.beautifulled.R;
 import com.chengtao.beautifulled.command.BeautifulLed;
 import com.chengtao.beautifulled.command.LEDPositionCommand;
 import com.chengtao.beautifulled.receiver.WifiStateReceiver;
+import com.chengtao.beautifulled.utils.MusicUtils;
 import com.chengtao.beautifulled.utils.PxDpUtils;
+import com.chengtao.pianoview.entity.AutoPlayEntity;
 import com.chengtao.pianoview.entity.Piano;
 import com.chengtao.pianoview.impl.OnLoadAudioListener;
+import com.chengtao.pianoview.impl.OnPianoAutoPlayListener;
 import com.chengtao.pianoview.impl.OnPianoClickListener;
 import com.chengtao.pianoview.impl.OnPianoDrawFinishListener;
 import com.chengtao.pianoview.view.PianoView;
 import com.dinuscxj.progressbar.CircleProgressBar;
 
+import java.util.ArrayList;
+
 /**
  * 钢琴控制界面
  */
-public class PianoControlActivity extends BaseActivity implements View.OnClickListener,WifiStateReceiver.OnWifiStateListener,OnPianoClickListener,OnLoadAudioListener,SeekBar.OnSeekBarChangeListener,OnPianoDrawFinishListener{
+public class PianoControlActivity extends BaseActivity implements View.OnClickListener,WifiStateReceiver.OnWifiStateListener,OnPianoClickListener,OnLoadAudioListener,SeekBar.OnSeekBarChangeListener,OnPianoDrawFinishListener,OnPianoAutoPlayListener{
     //--------------常量
     //钢琴视图图片总的宽度
     private static final int IMAGE_PIANO_BAR_TOTAL_WIDTH = 592;
@@ -43,6 +49,7 @@ public class PianoControlActivity extends BaseActivity implements View.OnClickLi
     private CircleProgressBar progressBar;
     private Button leftArrow;
     private Button rightArrow;
+    private Button btnMusic;
     //--------------指令
     private LEDPositionCommand ledPositionCommand;
     //对话框
@@ -51,6 +58,10 @@ public class PianoControlActivity extends BaseActivity implements View.OnClickLi
     private WifiStateReceiver receiver;
     //左右两个按键增加和减少的进度值
     private int scrollProgress = 0;
+    //小星星音乐列表
+    private ArrayList<AutoPlayEntity> litterStarList;
+    //是否正在自动播放播放
+    private boolean isAutoPlaying = false;
     @Override
     protected int getLayoutId() {
         return R.layout.activity_piano_control;
@@ -63,9 +74,10 @@ public class PianoControlActivity extends BaseActivity implements View.OnClickLi
         pianoView = getView(R.id.pv);
         leftArrow = getView(R.id.iv_left_arrow);
         rightArrow = getView(R.id.iv_right_arrow);
+        btnMusic = getView(R.id.iv_music);
         //初始化对话框
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        View view = LayoutInflater.from(this).inflate(R.layout.dialog_loading_audio,null);
+        @SuppressLint("InflateParams") View view = LayoutInflater.from(this).inflate(R.layout.dialog_loading_audio,null);
         progressBar = (CircleProgressBar) view.findViewById(R.id.line_progress);
         builder.setView(view);
         builder.setCancelable(false);
@@ -80,6 +92,7 @@ public class PianoControlActivity extends BaseActivity implements View.OnClickLi
         ledPositionCommand = new LEDPositionCommand();
         //初始化WIFI状态广播
         initReceiver();
+        litterStarList = MusicUtils.getLitterStarMusic();
     }
 
     private void initReceiver() {
@@ -95,10 +108,12 @@ public class PianoControlActivity extends BaseActivity implements View.OnClickLi
     protected void setListener() {
         pianoView.setOnPianoClickListener(this);
         pianoView.setOnLoadMusicListener(this);
-        pianoView.setDrawFinishListener(this);
+        pianoView.setFinishListener(this);
+        pianoView.setAutoPlayListener(this);
         seekBar.setOnSeekBarChangeListener(this);
         leftArrow.setOnClickListener(this);
         rightArrow.setOnClickListener(this);
+        btnMusic.setOnClickListener(this);
     }
 
     @Override
@@ -238,7 +253,7 @@ public class PianoControlActivity extends BaseActivity implements View.OnClickLi
         }
         int progress;
         switch (view.getId()){
-            case R.id.iv_left_arrow:
+            case R.id.iv_left_arrow://左移
                 if (scrollProgress == 0){
                     progress = 0;
                 }else {
@@ -249,7 +264,7 @@ public class PianoControlActivity extends BaseActivity implements View.OnClickLi
                 }
                 seekBar.setProgress(progress);
                 break;
-            case R.id.iv_right_arrow:
+            case R.id.iv_right_arrow://右移
                 if (scrollProgress == 0){
                     progress = 100;
                 }else {
@@ -260,11 +275,29 @@ public class PianoControlActivity extends BaseActivity implements View.OnClickLi
                 }
                 seekBar.setProgress(progress);
                 break;
+            case R.id.iv_music://自动播放
+                if (!isAutoPlaying){
+                    isAutoPlaying = true;
+                    autoPlayLitterStarMusic();
+                }else {
+                    showToast("正在自动播放小星星,请等待播放完成~~");
+                }
+                break;
+        }
+    }
+
+    /**
+     * 自动播放小星星音乐
+     */
+    private void autoPlayLitterStarMusic() {
+        if (litterStarList != null && litterStarList.size() > 0){
+            seekBar.setProgress(50);
+            pianoView.autoPlay(litterStarList);
         }
     }
 
     @Override
-    public void pianoDrawFinish() {
+    public void onPianoDrawFinish() {
         Log.e("TAG","pianoDrawFinish");
         //获取钢琴视图在手机上的宽度
         int pianobarTotalWidth = seekBar.getWidth() - seekBar.getPaddingLeft() - seekBar.getPaddingRight();
@@ -287,5 +320,15 @@ public class PianoControlActivity extends BaseActivity implements View.OnClickLi
         Log.e("TAG","seekbarThumbOffset------"+seekbarThumbOffset);
         //设置seekbar拇指图片的偏移
         seekBar.setThumbOffset(seekbarThumbOffset);
+    }
+
+    @Override
+    public void onPianoAutoPlayStart() {
+        showToast("开始自动播放小星星~~");
+    }
+
+    @Override
+    public void onPianoAutoPlayEnd() {
+        isAutoPlaying = false;
     }
 }
