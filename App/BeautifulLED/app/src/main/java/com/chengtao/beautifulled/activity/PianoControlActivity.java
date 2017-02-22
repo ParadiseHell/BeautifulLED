@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.SeekBar;
 
 import com.chengtao.beautifulled.R;
@@ -21,6 +22,7 @@ import com.chengtao.beautifulled.command.LEDPositionCommand;
 import com.chengtao.beautifulled.receiver.WifiStateReceiver;
 import com.chengtao.beautifulled.utils.MusicUtils;
 import com.chengtao.beautifulled.utils.PxDpUtils;
+import com.chengtao.beautifulled.utils.SpUtils;
 import com.chengtao.pianoview.entity.AutoPlayEntity;
 import com.chengtao.pianoview.entity.Piano;
 import com.chengtao.pianoview.impl.OnLoadAudioListener;
@@ -50,6 +52,7 @@ public class PianoControlActivity extends BaseActivity implements View.OnClickLi
     private Button leftArrow;
     private Button rightArrow;
     private Button btnMusic;
+    private ImageView ivTipAutoPlay;
     //--------------指令
     private LEDPositionCommand ledPositionCommand;
     //对话框
@@ -75,6 +78,8 @@ public class PianoControlActivity extends BaseActivity implements View.OnClickLi
         leftArrow = getView(R.id.iv_left_arrow);
         rightArrow = getView(R.id.iv_right_arrow);
         btnMusic = getView(R.id.iv_music);
+        ivTipAutoPlay = getView(R.id.iv_tip_auto_play);
+        ivTipAutoPlay.setVisibility(View.GONE);
         //初始化对话框
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         @SuppressLint("InflateParams") View view = LayoutInflater.from(this).inflate(R.layout.dialog_loading_audio,null);
@@ -93,6 +98,8 @@ public class PianoControlActivity extends BaseActivity implements View.OnClickLi
         //初始化WIFI状态广播
         initReceiver();
         litterStarList = MusicUtils.getLitterStarMusic();
+        //
+        seekBar.setProgress(50);
     }
 
     private void initReceiver() {
@@ -114,6 +121,7 @@ public class PianoControlActivity extends BaseActivity implements View.OnClickLi
         leftArrow.setOnClickListener(this);
         rightArrow.setOnClickListener(this);
         btnMusic.setOnClickListener(this);
+        ivTipAutoPlay.setOnClickListener(this);
     }
 
     @Override
@@ -170,6 +178,11 @@ public class PianoControlActivity extends BaseActivity implements View.OnClickLi
     public void loadPianoAudioFinish() {
         dialog.dismiss();
         showToast("加载音频成功,开始你的炫酷之旅吧~~");
+        if (SpUtils.isFirstIn(mContext)){
+            ivTipAutoPlay.setVisibility(View.VISIBLE);
+        }else {
+            ivTipAutoPlay.setOnClickListener(null);
+        }
     }
 
     @Override
@@ -282,6 +295,10 @@ public class PianoControlActivity extends BaseActivity implements View.OnClickLi
                 }else {
                     showToast("正在自动播放小星星,请等待播放完成~~");
                 }
+                break;
+            case R.id.iv_tip_auto_play:
+                ivTipAutoPlay.setVisibility(View.GONE);
+                SpUtils.setNotFirstIn(mContext);
                 break;
         }
     }
