@@ -37,14 +37,14 @@ import java.util.ArrayList;
 /**
  * 钢琴控制界面
  */
-public class PianoControlActivity extends BaseActivity implements View.OnClickListener,WifiStateReceiver.OnWifiStateListener,OnPianoClickListener,OnLoadAudioListener,SeekBar.OnSeekBarChangeListener,OnPianoDrawFinishListener,OnPianoAutoPlayListener{
+public class PianoControlActivity extends BaseActivity implements View.OnClickListener, WifiStateReceiver.OnWifiStateListener, OnPianoClickListener, OnLoadAudioListener, SeekBar.OnSeekBarChangeListener, OnPianoDrawFinishListener, OnPianoAutoPlayListener {
     //--------------常量
     //钢琴视图图片总的宽度
     private static final int IMAGE_PIANO_BAR_TOTAL_WIDTH = 592;
     //钢琴视图图片左边偏移量（实际的钢琴开始位置）
     private static final int IMAGE_PIANO_BAR_OFFSET_WIDTH = 33;
-    //seekbar拇指图片默认和背景偏移的dp值
-    private static final float SEEKBAR_THUMB_DEFULT_OFFSET_DP = 14f;
+    //seek bar拇指图片默认和背景偏移的dp值
+    private static final float SEEK_BAR_THUMB_DEFAULT_OFFSET_DP = 14f;
     //---------------控件
     private SeekBar seekBar;
     private PianoView pianoView;
@@ -65,6 +65,7 @@ public class PianoControlActivity extends BaseActivity implements View.OnClickLi
     private ArrayList<AutoPlayEntity> litterStarList;
     //是否正在自动播放播放
     private boolean isAutoPlaying = false;
+
     @Override
     protected int getLayoutId() {
         return R.layout.activity_piano_control;
@@ -72,7 +73,6 @@ public class PianoControlActivity extends BaseActivity implements View.OnClickLi
 
     @Override
     protected void initView() {
-        Log.e("TAG","initView");
         seekBar = getView(R.id.sb);
         pianoView = getView(R.id.pv);
         leftArrow = getView(R.id.iv_left_arrow);
@@ -82,7 +82,7 @@ public class PianoControlActivity extends BaseActivity implements View.OnClickLi
         ivTipAutoPlay.setVisibility(View.GONE);
         //初始化对话框
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        @SuppressLint("InflateParams") View view = LayoutInflater.from(this).inflate(R.layout.dialog_loading_audio,null);
+        @SuppressLint("InflateParams") View view = LayoutInflater.from(this).inflate(R.layout.dialog_loading_audio, null);
         progressBar = (CircleProgressBar) view.findViewById(R.id.line_progress);
         builder.setView(view);
         builder.setCancelable(false);
@@ -92,7 +92,7 @@ public class PianoControlActivity extends BaseActivity implements View.OnClickLi
     @Override
     protected void initData() {
         //-------------初始化Socket
-        initSockect(BeautifulLed.WIFI_HOST_IP,BeautifulLed.WIFI_HOST_PORT);
+        initSocket(BeautifulLed.WIFI_HOST_IP, BeautifulLed.WIFI_HOST_PORT);
         //-------------初始化指令
         ledPositionCommand = new LEDPositionCommand();
         //初始化WIFI状态广播
@@ -108,7 +108,7 @@ public class PianoControlActivity extends BaseActivity implements View.OnClickLi
         IntentFilter filter = new IntentFilter();
         filter.addAction("android.net.wifi.WIFI_STATE_CHANGED");
         filter.addAction("android.net.wifi.STATE_CHANGE");
-        registerReceiver(receiver,filter);
+        registerReceiver(receiver, filter);
     }
 
     @Override
@@ -178,9 +178,9 @@ public class PianoControlActivity extends BaseActivity implements View.OnClickLi
     public void loadPianoAudioFinish() {
         dialog.dismiss();
         showToast("加载音频成功,开始你的炫酷之旅吧~~");
-        if (SpUtils.isFirstIn(mContext)){
+        if (SpUtils.isFirstIn(mContext)) {
             ivTipAutoPlay.setVisibility(View.VISIBLE);
-        }else {
+        } else {
             ivTipAutoPlay.setOnClickListener(null);
         }
     }
@@ -198,36 +198,36 @@ public class PianoControlActivity extends BaseActivity implements View.OnClickLi
 
     @Override
     public void onPianoClick(Piano.PianoKeyType type, Piano.PianoVoice voice, int group, int positionOfGroup) {
-            switch (voice){
-                case DO:
-                    ledPositionCommand.setCommandContent("0");
-                    sendCommand(0,ledPositionCommand);
-                    break;
-                case RE:
-                    ledPositionCommand.setCommandContent("1");
-                    sendCommand(0,ledPositionCommand);
-                    break;
-                case MI:
-                    ledPositionCommand.setCommandContent("2");
-                    sendCommand(0,ledPositionCommand);
-                    break;
-                case FA:
-                    ledPositionCommand.setCommandContent("3");
-                    sendCommand(0,ledPositionCommand);
-                    break;
-                case SO:
-                    ledPositionCommand.setCommandContent("4");
-                    sendCommand(0,ledPositionCommand);
-                    break;
-                case LA:
-                    ledPositionCommand.setCommandContent("5");
-                    sendCommand(0,ledPositionCommand);
-                    break;
-                case SI:
-                    ledPositionCommand.setCommandContent("6");
-                    sendCommand(0,ledPositionCommand);
-                    break;
-            }
+        switch (voice) {
+            case DO:
+                ledPositionCommand.setCommandContent("0");
+                sendCommand(0, ledPositionCommand);
+                break;
+            case RE:
+                ledPositionCommand.setCommandContent("1");
+                sendCommand(0, ledPositionCommand);
+                break;
+            case MI:
+                ledPositionCommand.setCommandContent("2");
+                sendCommand(0, ledPositionCommand);
+                break;
+            case FA:
+                ledPositionCommand.setCommandContent("3");
+                sendCommand(0, ledPositionCommand);
+                break;
+            case SO:
+                ledPositionCommand.setCommandContent("4");
+                sendCommand(0, ledPositionCommand);
+                break;
+            case LA:
+                ledPositionCommand.setCommandContent("5");
+                sendCommand(0, ledPositionCommand);
+                break;
+            case SI:
+                ledPositionCommand.setCommandContent("6");
+                sendCommand(0, ledPositionCommand);
+                break;
+        }
     }
 
     @Override
@@ -248,52 +248,55 @@ public class PianoControlActivity extends BaseActivity implements View.OnClickLi
 
     /**
      * 本界面跳转
+     *
      * @param activity Activity
      */
-    public static void invoke(Activity activity){
-        Intent intent = new Intent(activity,PianoControlActivity.class);
+    public static void invoke(Activity activity) {
+        Intent intent = new Intent(activity, PianoControlActivity.class);
         activity.startActivity(intent);
     }
 
     @Override
     public void onClick(View view) {
         if (scrollProgress == 0) {
-            try{
+            try {
                 scrollProgress = (pianoView.getLayoutWidth() * 100) / pianoView.getPianoWidth();
-            }catch (Exception e){
+            } catch (Exception e) {
                 showToast(e.getMessage());
             }
         }
         int progress;
-        switch (view.getId()){
+        switch (view.getId()) {
             case R.id.iv_left_arrow://左移
-                if (scrollProgress == 0){
+                if (scrollProgress == 0) {
                     progress = 0;
-                }else {
+                } else {
                     progress = seekBar.getProgress() - scrollProgress;
-                    if (progress < 0){
+                    if (progress < 0) {
                         progress = 0;
                     }
                 }
                 seekBar.setProgress(progress);
                 break;
             case R.id.iv_right_arrow://右移
-                if (scrollProgress == 0){
+                if (scrollProgress == 0) {
                     progress = 100;
-                }else {
+                } else {
                     progress = seekBar.getProgress() + scrollProgress;
-                    if (progress > 100){
+                    if (progress > 100) {
                         progress = 100;
                     }
                 }
                 seekBar.setProgress(progress);
                 break;
             case R.id.iv_music://自动播放
-                if (!isAutoPlaying){
+                if (!isAutoPlaying) {
                     isAutoPlaying = true;
                     autoPlayLitterStarMusic();
-                }else {
-                    showToast("正在自动播放小星星,请等待播放完成~~");
+                    //自动播放时,钢琴控件不可操作
+                    pianoView.setCanPress(false);
+                } else {
+                    showToast("正在自动播放" + MusicUtils.getLittleStarName() + ",请等待播放完成~~");
                 }
                 break;
             case R.id.iv_tip_auto_play:
@@ -307,7 +310,7 @@ public class PianoControlActivity extends BaseActivity implements View.OnClickLi
      * 自动播放小星星音乐
      */
     private void autoPlayLitterStarMusic() {
-        if (litterStarList != null && litterStarList.size() > 0){
+        if (litterStarList != null && litterStarList.size() > 0) {
             seekBar.setProgress(50);
             pianoView.autoPlay(litterStarList);
         }
@@ -315,37 +318,39 @@ public class PianoControlActivity extends BaseActivity implements View.OnClickLi
 
     @Override
     public void onPianoDrawFinish() {
-        Log.e("TAG","pianoDrawFinish");
+        Log.e("TAG", "pianoDrawFinish");
         //获取钢琴视图在手机上的宽度
-        int pianobarTotalWidth = seekBar.getWidth() - seekBar.getPaddingLeft() - seekBar.getPaddingRight();
-        Log.e("TAG","pianobarTotalWidth------"+pianobarTotalWidth);
+        int pianoBarTotalWidth = seekBar.getWidth() - seekBar.getPaddingLeft() - seekBar.getPaddingRight();
+        Log.e("TAG", "pianoBarTotalWidth------" + pianoBarTotalWidth);
         //获取钢琴视图在手机上的缩放
-        float pianobarScale = (float)pianobarTotalWidth / IMAGE_PIANO_BAR_TOTAL_WIDTH;
-        Log.e("TAG","pianobarScale------"+pianobarScale);
+        float pianoBarScale = (float) pianoBarTotalWidth / IMAGE_PIANO_BAR_TOTAL_WIDTH;
+        Log.e("TAG", "pianoBarScale------" + pianoBarScale);
         //获取手机上钢琴视图的实际宽度
-        int pianobarWidth = (int)(pianobarScale * (IMAGE_PIANO_BAR_TOTAL_WIDTH - 2 * IMAGE_PIANO_BAR_OFFSET_WIDTH));
+        int pianoBarWidth = (int) (pianoBarScale * (IMAGE_PIANO_BAR_TOTAL_WIDTH - 2 * IMAGE_PIANO_BAR_OFFSET_WIDTH));
         //获取钢琴视图拇指宽度
-        int pianoThumbWith = (int)(((float) pianobarWidth / (float) pianoView.getPianoWidth()) * (float) pianoView.getLayoutWidth());
-        //设置seekbar拇指图片
-        Drawable drawable = ContextCompat.getDrawable(mContext,R.drawable.seekbar_thumb);
-        Bitmap bitmap = ((BitmapDrawable)drawable).getBitmap();
+        int pianoThumbWith = (int) (((float) pianoBarWidth / (float) pianoView.getPianoWidth()) * (float) pianoView.getLayoutWidth());
+        //设置seek bar拇指图片
+        Drawable drawable = ContextCompat.getDrawable(mContext, R.drawable.seekbar_thumb);
+        Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
         Drawable d = new BitmapDrawable(getResources(), Bitmap.createScaledBitmap(bitmap, pianoThumbWith, seekBar.getHeight(), true));
         seekBar.setThumb(d);
         //获取钢琴视图拇指资源
-        int seekbarThumbOffset = -1 * (int)(IMAGE_PIANO_BAR_OFFSET_WIDTH * pianobarScale)
-                + (int)PxDpUtils.convertDpToPixel(SEEKBAR_THUMB_DEFULT_OFFSET_DP,mContext);
-        Log.e("TAG","seekbarThumbOffset------"+seekbarThumbOffset);
-        //设置seekbar拇指图片的偏移
-        seekBar.setThumbOffset(seekbarThumbOffset);
+        int seekBarThumbOffset = -1 * (int) (IMAGE_PIANO_BAR_OFFSET_WIDTH * pianoBarScale)
+                + (int) PxDpUtils.convertDpToPixel(SEEK_BAR_THUMB_DEFAULT_OFFSET_DP, mContext);
+        Log.e("TAG", "seekBarThumbOffset------" + seekBarThumbOffset);
+        //设置seek bar拇指图片的偏移
+        seekBar.setThumbOffset(seekBarThumbOffset);
     }
 
     @Override
     public void onPianoAutoPlayStart() {
-        showToast("开始自动播放小星星~~");
+        showToast("开始自动播放" + MusicUtils.getLittleStarName() + "~~");
     }
 
     @Override
     public void onPianoAutoPlayEnd() {
         isAutoPlaying = false;
+        //播放完成后,钢琴控件可控
+        pianoView.setCanPress(true);
     }
 }

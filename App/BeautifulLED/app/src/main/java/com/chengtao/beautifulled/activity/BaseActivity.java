@@ -5,19 +5,14 @@ import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.PersistableBundle;
-import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Toast;
 
-import com.chengtao.beautifulled.R;
 import com.chengtao.beautifulled.command.ICommand;
 import com.chengtao.beautifulled.socket.UDPListener;
-import com.chengtao.beautifulled.socket.UDPSockect;
+import com.chengtao.beautifulled.socket.UDPSocket;
 
 /**
  * Created by ChengTao on 2016-11-07.
@@ -26,7 +21,7 @@ import com.chengtao.beautifulled.socket.UDPSockect;
 public abstract class BaseActivity extends Activity implements UDPListener{
     protected Handler mHandler;
     protected Context mContext;
-    protected UDPSockect sockect;
+    protected UDPSocket socket;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,7 +40,7 @@ public abstract class BaseActivity extends Activity implements UDPListener{
         }
         mContext = this;
         mHandler = new Handler();
-        sockect = new UDPSockect(this);
+        socket = new UDPSocket(this);
         if (getLayoutId() != 0){
             setContentView(getLayoutId());
         }
@@ -54,16 +49,16 @@ public abstract class BaseActivity extends Activity implements UDPListener{
         initData();
     }
 
-    protected void initSockect(String ip,int port){
-        sockect.initSocket(ip,port);
+    protected void initSocket(String ip,int port){
+        socket.initSocket(ip,port);
     }
 
     protected void sendCommand(int id,ICommand cmd){
-        if (sockect.isInit()){
+        if (socket.isInit()){
             if (cmd.getCommand() == null){
                 showToast("请检查您的指令~");
             }else {
-                sockect.sendCommand(id,cmd.getCommand());
+                socket.sendCommand(id,cmd.getCommand());
             }
         }else {
             showToast("还没有初始化连接哦~");

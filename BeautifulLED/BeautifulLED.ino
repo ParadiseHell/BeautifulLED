@@ -12,66 +12,66 @@
 #include <controller.h>
 #include <clockless.h>
 
-//---------------³£Á¿--------------
-#define LED_IIC_POS 6//IICµØÖ·
-#define TOTAL_LED_NUMS 82//×ÜµÆµãÊý
-#define OUTPUT_PORT 8//Êä³ö¶Ë¿Ú
-#define TOTAL_SECTION_NUMS 14//Ò»ÌõµÆ´øÄÜÍ¬Ê±ÏÔÊ¾µÄµÆ¶ÎÊý
-#define DEFAULT_COLOR_LIGHTNESS 2//Ä¬ÈÏÕûÌåµÆ´øµÄÁÁ¶È
-#define DEFAULT_DELAY_TIME 50//Ä¬ÈÏÔÝÍ£Ê±¼ä
+//---------------ï¿½ï¿½ï¿½ï¿½--------------
+#define LED_IIC_POS 0//IICï¿½ï¿½Ö·
+#define TOTAL_LED_NUMS 82//ï¿½ÜµÆµï¿½ï¿½ï¿½
+#define OUTPUT_PORT 8//ï¿½ï¿½ï¿½ï¿½Ë¿ï¿½
+#define TOTAL_SECTION_NUMS 14//Ò»ï¿½ï¿½ï¿½Æ´ï¿½ï¿½ï¿½Í¬Ê±ï¿½ï¿½Ê¾ï¿½ÄµÆ¶ï¿½ï¿½ï¿½
+#define DEFAULT_COLOR_LIGHTNESS 2//Ä¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+#define DEFAULT_DELAY_TIME 50//Ä¬ï¿½ï¿½ï¿½ï¿½Í£Ê±ï¿½ï¿½
 
-//----------Ëæ»úÑÕÉ«----------------
-#define DEFAULT_RANDOM_COLOR_NUMS 10//Ä¬ÈÏµÄËæ»úÑÕÉ«¸öÊý
+//----------ï¿½ï¿½ï¿½ï¿½ï¿½É«----------------
+#define DEFAULT_RANDOM_COLOR_NUMS 10//Ä¬ï¿½Ïµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É«ï¿½ï¿½ï¿½ï¿½
 
-//Ä¬ÈÏ°×É«µÆ¶Î
-#define DEFAULT_WATER_LED_NUMS 12//Ä¬ÈÏµÄÁ÷Ë®LEDµÆ¸öÊý
-#define DEFAULT_WATER_LED_COLOR_NUMS 1//Ä¬ÈÏµÄÁ÷Ë®LEDµÆÑÕÉ«¸öÊý
-#define DEFAULT_WATER_LED_OFF_NUMS 1//Ä¬ÈÏµÄÁ÷Ë®LEDµÆÏ¨Ãð¸öÊý
-#define DEFAULT_WATER_LED_BREAK 9//Ã¿¸öÄ¬ÈÏ°×É«¶ÎÖ®¼äµÄ¼äÏ¶
-#define DEFAULT_WATER_LED_SECTION_NUMS 4//Ä¬ÈÏ°×É«¶ÎµÄ¸öÊý
+//Ä¬ï¿½Ï°ï¿½É«ï¿½Æ¶ï¿½
+#define DEFAULT_WATER_LED_NUMS 12//Ä¬ï¿½Ïµï¿½ï¿½ï¿½Ë®LEDï¿½Æ¸ï¿½ï¿½ï¿½
+#define DEFAULT_WATER_LED_COLOR_NUMS 1//Ä¬ï¿½Ïµï¿½ï¿½ï¿½Ë®LEDï¿½ï¿½ï¿½ï¿½É«ï¿½ï¿½ï¿½ï¿½
+#define DEFAULT_WATER_LED_OFF_NUMS 1//Ä¬ï¿½Ïµï¿½ï¿½ï¿½Ë®LEDï¿½ï¿½Ï¨ï¿½ï¿½ï¿½ï¿½ï¿½
+#define DEFAULT_WATER_LED_BREAK 9//Ã¿ï¿½ï¿½Ä¬ï¿½Ï°ï¿½É«ï¿½ï¿½Ö®ï¿½ï¿½Ä¼ï¿½Ï¶
+#define DEFAULT_WATER_LED_SECTION_NUMS 4//Ä¬ï¿½Ï°ï¿½É«ï¿½ÎµÄ¸ï¿½ï¿½ï¿½
 
-//Ä¬ÈÏËæ»úÑÕÉ«¶Î
-#define DEFAULT_TOATAL_RANDOM_COLOR_NUMS 1//ÑÕÉ«¸öÊý
-#define DEFAULT_RANDOM_LED_NUMS 10//LED¸öÊý
-#define DEFAULT_RANDOM_OFF_LED_NUMS 5//ÃðµãµÄLED¸öÊý
+//Ä¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É«ï¿½ï¿½
+#define DEFAULT_TOATAL_RANDOM_COLOR_NUMS 1//ï¿½ï¿½É«ï¿½ï¿½ï¿½ï¿½
+#define DEFAULT_RANDOM_LED_NUMS 10//LEDï¿½ï¿½ï¿½ï¿½
+#define DEFAULT_RANDOM_OFF_LED_NUMS 5//ï¿½ï¿½ï¿½ï¿½LEDï¿½ï¿½ï¿½ï¿½
 
-//-----------Ã¿¶ÎµÄ½á¹¹Ìå----------
+//-----------Ã¿ï¿½ÎµÄ½á¹¹ï¿½ï¿½----------
 struct LEDSection
 {
-	int currentPositon;//µ±Ç°Î»ÖÃ
-	long* colorArray;//Ã¿¶ÎµÄÑÕÉ«Êý×é
-	int colorArrayLength;//Ã¿¶ÎÑÕÉ«Êý×é³¤¶È
-	int* colorNumsArray;//Ã¿¸öÑÕÉ«µÄ¸öÊýµÄÊý×é
-	int offLedNums;//ÒªÏ¨ÃðµÄµÆµãÊý
-	int ledNums;//Ã¿¶ÎµÄµÆµãÊý
-	int* lightnessArray;//ÁÁ¶ÈÊý×é
-	boolean isUsing;//±êÖ¾Î»£¬¼ÇÂ¼ÊÇ·ñÔÚÊ¹ÓÃ
-	boolean isNew;//±êÖ¾Î»£¬¼ÇÂ¼¸ÃµÆ¶ÎÊÇ·ñÊÇÐÂ²úÉúµÄ
-	boolean isInitOK;//±êÖ¾Î»£¬¼ÇÂ¼¸ÃµÆ¶ÎÊÇ·ñ³õÊ¼»¯³É¹¦
+	int currentPositon;//ï¿½ï¿½Ç°Î»ï¿½ï¿½
+	long* colorArray;//Ã¿ï¿½Îµï¿½ï¿½ï¿½É«ï¿½ï¿½ï¿½ï¿½
+	int colorArrayLength;//Ã¿ï¿½ï¿½ï¿½ï¿½É«ï¿½ï¿½ï¿½é³¤ï¿½ï¿½
+	int* colorNumsArray;//Ã¿ï¿½ï¿½ï¿½ï¿½É«ï¿½Ä¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	int offLedNums;//ÒªÏ¨ï¿½ï¿½ÄµÆµï¿½ï¿½ï¿½
+	int ledNums;//Ã¿ï¿½ÎµÄµÆµï¿½ï¿½ï¿½
+	int* lightnessArray;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	boolean isUsing;//ï¿½ï¿½Ö¾Î»ï¿½ï¿½ï¿½ï¿½Â¼ï¿½Ç·ï¿½ï¿½ï¿½Ê¹ï¿½ï¿½
+	boolean isNew;//ï¿½ï¿½Ö¾Î»ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ÃµÆ¶ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½Â²ï¿½ï¿½ï¿½ï¿½ï¿½
+	boolean isInitOK;//ï¿½ï¿½Ö¾Î»ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ÃµÆ¶ï¿½ï¿½Ç·ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½É¹ï¿½
 };
 
-//-----------ÑÕÉ«½á¹¹Ìå-------------
+//-----------ï¿½ï¿½É«ï¿½á¹¹ï¿½ï¿½-------------
 struct CRGB
 {
-	byte g;//ÂÌÉ«
-	byte r;//ºìÉ«
-	byte b;//À¶É«
+	byte g;//ï¿½ï¿½É«
+	byte r;//ï¿½ï¿½É«
+	byte b;//ï¿½ï¿½É«
 };
 
-//------------È«¾Ö±äÁ¿----------------------
+//------------È«ï¿½Ö±ï¿½ï¿½ï¿½----------------------
 struct LEDSection ledSections[TOTAL_SECTION_NUMS];
 struct CRGB RGB[TOTAL_LED_NUMS];
-WS2811Controller800Mhz<OUTPUT_PORT> LED;//¶¨ÒåµÆ´ø
-int static throughLEDNums = 0;//¾­¹ýµÄµÆµãÊý
+WS2811Controller800Mhz<OUTPUT_PORT> LED;//ï¿½ï¿½ï¿½ï¿½Æ´ï¿½
+int static throughLEDNums = 0;//ï¿½ï¿½ï¿½ï¿½ï¿½ÄµÆµï¿½ï¿½ï¿½
 
-//Ä¬ÈÏÇé¿öÏÂ°×É«µÄµÆ¶Î²ÎÊý
-long defaultWaterColorArray[DEFAULT_WATER_LED_COLOR_NUMS] = { 0xFFFFFF };//Ä¬ÈÏÑÕÉ«Êý×é
-int defaultWaterColorNumsArray[DEFAULT_WATER_LED_COLOR_NUMS] = { DEFAULT_WATER_LED_NUMS };//Ä¬ÈÏÃ¿¸öÑÕÉ«µÄ¸öÊý
-int defaultWaterColorLightnessArray[DEFAULT_WATER_LED_NUMS] = {2,4,6,8,10,12,12,10,8,6,4,2};//Ä¬ÈÏÕýÏÒÁ÷Ë®¶ÎµÄÁÁ¶È
+//Ä¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â°ï¿½É«ï¿½ÄµÆ¶Î²ï¿½ï¿½ï¿½
+long defaultWaterColorArray[DEFAULT_WATER_LED_COLOR_NUMS] = { 0xFFFFFF };//Ä¬ï¿½ï¿½ï¿½ï¿½É«ï¿½ï¿½ï¿½ï¿½
+int defaultWaterColorNumsArray[DEFAULT_WATER_LED_COLOR_NUMS] = { DEFAULT_WATER_LED_NUMS };//Ä¬ï¿½ï¿½Ã¿ï¿½ï¿½ï¿½ï¿½É«ï¿½Ä¸ï¿½ï¿½ï¿½
+int defaultWaterColorLightnessArray[DEFAULT_WATER_LED_NUMS] = {2,4,6,8,10,12,12,10,8,6,4,2};//Ä¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë®ï¿½Îµï¿½ï¿½ï¿½ï¿½ï¿½
 int defaultWaterColorNums = DEFAULT_WATER_LED_COLOR_NUMS;
 
-//--------------Ëæ»úÑÕÉ«-----------
-//Ëæ»úÑÕÉ«Êý×é
+//--------------ï¿½ï¿½ï¿½ï¿½ï¿½É«-----------
+//ï¿½ï¿½ï¿½ï¿½ï¿½É«ï¿½ï¿½ï¿½ï¿½
 long randomColors[DEFAULT_RANDOM_COLOR_NUMS] = 
 {0xFF0000,0x00FF00,0x0000FF,
 0x00FFFF,0xFFFF00,0x660066,
@@ -87,10 +87,10 @@ long color7[1] = { 0 };
 long color8[1] = { 0 };
 long color9[1] = { 0 };
 long color10[1] = { 0 };
-//²ÊºçÑÕÉ«
+//ï¿½Êºï¿½ï¿½ï¿½É«
 long rainbowColors[7] = { 0xFF0000,0xFF7F00,0xFFFF00,0x00FF00,0x0000FF,0x4B0082,0x9400D3 };
 //struct LEDSection section[DEFAULT_RANDOM_COLOR_NUMS];
-//¶¨ÒåËæ»úµÆ¶ÎÄ¬ÈÏÊôÐÔ
+//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ¶ï¿½Ä¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 long color[DEFAULT_TOATAL_RANDOM_COLOR_NUMS] = { 0 };
 int colorLength = DEFAULT_TOATAL_RANDOM_COLOR_NUMS;
 int colorNums[DEFAULT_TOATAL_RANDOM_COLOR_NUMS] = { DEFAULT_RANDOM_LED_NUMS };
@@ -98,9 +98,9 @@ int ledNums = DEFAULT_RANDOM_LED_NUMS;
 int lightness[DEFAULT_RANDOM_LED_NUMS] = {100,100,100,100,100,100,100,100,100,100};
 int offLedNums = DEFAULT_RANDOM_OFF_LED_NUMS;
 
-//±êÖ¾°×É«µÆ¶Î×î¿ªÊ¼Ò»¶ÎÊÇ·ñ³õÊ¼»¯ºÃ
+//ï¿½ï¿½Ö¾ï¿½ï¿½É«ï¿½Æ¶ï¿½ï¿½î¿ªÊ¼Ò»ï¿½ï¿½ï¿½Ç·ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½
 boolean isWriteFirstSectionInitOK = false;
-//±êÖ¾Ëæ»úµÆ¶Î×î¿ªÊ¼Ò»¶ÎÊÇ·ñ³õÊ¼»¯ºÃ
+//ï¿½ï¿½Ö¾ï¿½ï¿½ï¿½ï¿½Æ¶ï¿½ï¿½î¿ªÊ¼Ò»ï¿½ï¿½ï¿½Ç·ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½
 boolean isRandomSectionInitOK = false;
 
 int x = 0;
@@ -134,14 +134,14 @@ void loop() {
 }
 
 /*
-³õÊ¼»¯Ã¿¸öLEDµÆ¶Î
+ï¿½ï¿½Ê¼ï¿½ï¿½Ã¿ï¿½ï¿½LEDï¿½Æ¶ï¿½
 */
 void initEveryLEDSection() {
 	for (int i = 0; i < TOTAL_SECTION_NUMS; i++)
 	{
 		ledSections[i].currentPositon = 0;
 		ledSections[i].isNew = false;
-		//µÚÒ»¸öºÍ×îºóÒ»¸öÎªÄ¬ÈÏµÄÁ÷Ë®ÐÔµÆ¶Î
+		//ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ÎªÄ¬ï¿½Ïµï¿½ï¿½ï¿½Ë®ï¿½ÔµÆ¶ï¿½
 		if (i < DEFAULT_WATER_LED_SECTION_NUMS)
 		{
 			if (i > 0)
@@ -212,7 +212,7 @@ void initEveryLEDSection() {
 }
 
 /*
-Æô¶¯LED
+ï¿½ï¿½ï¿½ï¿½LED
 */
 void startLED(int delayTime) {
 	restLEDAndShow();
@@ -220,12 +220,12 @@ void startLED(int delayTime) {
 	for (int i = 0; i < TOTAL_SECTION_NUMS; i++)
 	{
 		
-		if (ledSections[i].isUsing)//ÅÐ¶ÏÊÇ·ñÔÚÊ¹ÓÃ
+		if (ledSections[i].isUsing)//ï¿½Ð¶ï¿½ï¿½Ç·ï¿½ï¿½ï¿½Ê¹ï¿½ï¿½
 		{
-			for (int j = ledSections[i].colorArrayLength - 1; j >= 0; j--)//Ñ­»·ÑÕÉ«Êý×é³¤¶È
+			for (int j = ledSections[i].colorArrayLength - 1; j >= 0; j--)//Ñ­ï¿½ï¿½ï¿½ï¿½É«ï¿½ï¿½ï¿½é³¤ï¿½ï¿½
 			{
-				//ÅÐ¶ÏÐÂ²úÉúµÄ°×É«µÆ¶ÎÊÇ·ñ¿ÉÒÔ³õÊ¼»¯
-				//-----------¿ªÊ¼----------------
+				//ï¿½Ð¶ï¿½ï¿½Â²ï¿½ï¿½ï¿½ï¿½Ä°ï¿½É«ï¿½Æ¶ï¿½ï¿½Ç·ï¿½ï¿½ï¿½Ô³ï¿½Ê¼ï¿½ï¿½
+				//-----------ï¿½ï¿½Ê¼----------------
 				if (ledSections[i].isNew)
 				{
 					if (i < DEFAULT_WATER_LED_SECTION_NUMS)
@@ -252,9 +252,9 @@ void startLED(int delayTime) {
 					}
 					ledSections[i].isNew = false;
 				}
-				//--------------½áÊø-------------
+				//--------------ï¿½ï¿½ï¿½ï¿½-------------
 				CRGB rgb = getRGBFromColor(ledSections[i].colorArray[j]);
-				for (int k = 0; k < ledSections[i].colorNumsArray[j]; k++)//Ñ­»·Ã¿¶ÎÑÕÉ«µÄ³¤¶È
+				for (int k = 0; k < ledSections[i].colorNumsArray[j]; k++)//Ñ­ï¿½ï¿½Ã¿ï¿½ï¿½ï¿½ï¿½É«ï¿½Ä³ï¿½ï¿½ï¿½
 				{
 					int position = ledSections[i].currentPositon + throughLEDNums - ledSections[i].ledNums + 1;
 					if (position >= 0 && position < TOTAL_LED_NUMS)
@@ -276,8 +276,8 @@ void startLED(int delayTime) {
 			{
 				ledSections[i].currentPositon += ledSections[i].offLedNums;
 			}
-			//ÅÐ¶Ï°×É«µÆ¶ÎÊÇ·ñ³õÊ¼»¯³É¹¦
-			//-----------¿ªÊ¼--------------
+			//ï¿½Ð¶Ï°ï¿½É«ï¿½Æ¶ï¿½ï¿½Ç·ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½É¹ï¿½
+			//-----------ï¿½ï¿½Ê¼--------------
 			if (!ledSections[i].isInitOK)
 			{
 				if (i < DEFAULT_WATER_LED_SECTION_NUMS)
@@ -297,7 +297,7 @@ void startLED(int delayTime) {
 				}
 				
 			}
-			//----------½áÊø---------------
+			//----------ï¿½ï¿½ï¿½ï¿½---------------
 			if (ledSections[i].currentPositon - ledSections[i].ledNums >= TOTAL_LED_NUMS)
 			{
 				ledSections[i].currentPositon = 0;
@@ -321,7 +321,7 @@ void startLED(int delayTime) {
 }
 
 /*
-Ëæ»úË¯Ãß
+ï¿½ï¿½ï¿½Ë¯ï¿½ï¿½
 */
 void randomSleep() {
 	randomSeed(analogRead(0));
@@ -330,7 +330,7 @@ void randomSleep() {
 }
 
 /*
-Ìí¼ÓµÆ¶Î
+ï¿½ï¿½ÓµÆ¶ï¿½
 */
 void addSection(){
 	//randomSeed(analogRead(0));
@@ -349,14 +349,14 @@ void addSection(){
 }
 
 /*
-ÖØÖÃLEDÃ¿¸öµã
+ï¿½ï¿½ï¿½ï¿½LEDÃ¿ï¿½ï¿½ï¿½ï¿½
 */
 void resetLED() {
 	memset((byte*)RGB, DEFAULT_COLOR_LIGHTNESS, TOTAL_LED_NUMS * (sizeof(struct CRGB)));
 }
 
 /*
-ÖØÖÃÃ¿¸öLED²¢ÏÔÊ¾
+ï¿½ï¿½ï¿½ï¿½Ã¿ï¿½ï¿½LEDï¿½ï¿½ï¿½ï¿½Ê¾
 */
 void restLEDAndShow() {
 	resetLED();
@@ -364,7 +364,7 @@ void restLEDAndShow() {
 }
 
 /*
-ÏÔÊ¾LED
+ï¿½ï¿½Ê¾LED
 */
 void showLED() {
 	LED.showRGB((byte*)RGB, TOTAL_LED_NUMS);
@@ -372,7 +372,7 @@ void showLED() {
 
 
 /*
-»ñÈ¡ÑÕÉ«µÄRGBÖµ
+ï¿½ï¿½È¡ï¿½ï¿½É«ï¿½ï¿½RGBÖµ
 */
 struct CRGB getRGBFromColor(long color) {
 	CRGB rgb;

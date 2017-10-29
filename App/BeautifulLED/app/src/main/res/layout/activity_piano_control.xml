@@ -1,16 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    >
+    android:layout_height="match_parent">
 <LinearLayout
     android:id="@+id/activity_main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@drawable/background"
-    tools:context="com.chengtao.beautifulled.activity.PianoControlActivity">
+    android:background="@drawable/background">
 
     <LinearLayout
         android:padding="5dp"
@@ -28,7 +25,9 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:background="@drawable/left_arrow"
+            android:layout_marginRight="15dp"
             android:layout_marginEnd="15dp"
+            android:layout_marginLeft="10dp"
             android:layout_marginStart="10dp"/>
 
         <SeekBar
@@ -48,7 +47,9 @@
             android:layout_height="40dp"
             android:background="@drawable/right_arrow"
             android:layout_marginEnd="10dp"
-            android:layout_marginStart="15dp"/>
+            android:layout_marginRight="10dp"
+            android:layout_marginStart="15dp"
+            android:layout_marginLeft="15dp"/>
         <Button
             android:id="@+id/iv_music"
             android:contentDescription="@string/image"

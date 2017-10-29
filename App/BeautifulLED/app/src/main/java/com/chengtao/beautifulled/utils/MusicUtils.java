@@ -68,4 +68,8 @@ public class MusicUtils {
         litterStarList.add(new AutoPlayEntity(Piano.PianoKeyType.WHITE,4,0,LITTER_STAR_BREAK_LONG_TIME));
         return litterStarList;
     }
+
+    public static String getLittleStarName(){
+        return "小星星";
+    }
 }

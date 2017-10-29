@@ -2,10 +2,10 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 24
-    buildToolsVersion "24.0.2"
+    buildToolsVersion '25.0.2'
     defaultConfig {
         applicationId "com.chengtao.beautifulled"
-        minSdkVersion 19
+        minSdkVersion 16
         targetSdkVersion 24
         versionCode 2001
         versionName "2.0.0.1"
