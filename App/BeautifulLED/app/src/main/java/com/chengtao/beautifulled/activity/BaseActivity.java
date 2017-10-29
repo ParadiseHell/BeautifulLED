@@ -111,7 +111,7 @@ public abstract class BaseActivity extends Activity implements UDPListener{
     }
 
     @Override
-    public void onRecieve(int id, String response) {
+    public void onReceive(int id, String response) {
 
     }
 

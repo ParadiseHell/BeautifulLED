@@ -9,5 +9,5 @@ public interface UDPListener {
     void onInitSuccess();
     void onSuccess(int id);
     void onFail(int id,Exception e);
-    void onRecieve(int id,String response);
+    void onReceive(int id,String response);
 }

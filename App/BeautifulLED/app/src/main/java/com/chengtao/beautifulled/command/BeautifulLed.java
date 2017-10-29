@@ -4,6 +4,7 @@ package com.chengtao.beautifulled.command;
  * Created by ChengTao on 2016-11-08.
  */
 
+@SuppressWarnings({"SpellCheckingInspection", "WeakerAccess"})
 public class BeautifulLed {
     //-------------------IP
     public static final String WIFI_HOST_IP = "192.168.4.1";
@@ -19,7 +20,7 @@ public class BeautifulLed {
     private static final String WIFI_INIT = COMMAND_PRESS + 5+ ":";
     private static final String LED = COMMAND_PRESS + 6+ ":";
 
-    public static String getWifiSsid() {
+    public static String getWifiSSId() {
         return WIFI_SSID;
     }
 

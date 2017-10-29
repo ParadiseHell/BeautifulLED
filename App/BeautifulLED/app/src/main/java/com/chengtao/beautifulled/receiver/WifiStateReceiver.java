@@ -9,13 +9,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
-import android.util.Log;
 
 /**
  * 判断WIFI状态的广播
  */
+@SuppressWarnings("SpellCheckingInspection")
 public class WifiStateReceiver extends BroadcastReceiver{
-    private static final String TAG = "WifiStateReceiver";
     //WIFI名字
     public static final String WIFI_NAME = "PianoAurora";
     private OnWifiStateListener listener;
@@ -33,7 +32,7 @@ public class WifiStateReceiver extends BroadcastReceiver{
                     break;
             }
         }else if (WifiManager.NETWORK_STATE_CHANGED_ACTION.equals(intent.getAction())){
-            WifiManager wifiManager = (WifiManager) context.getSystemService (Context.WIFI_SERVICE);
+            WifiManager wifiManager = (WifiManager) context.getApplicationContext().getSystemService (Context.WIFI_SERVICE);
             if (wifiManager != null){
                 WifiInfo wifiInfo = wifiManager.getConnectionInfo ();
                 if (wifiInfo != null){

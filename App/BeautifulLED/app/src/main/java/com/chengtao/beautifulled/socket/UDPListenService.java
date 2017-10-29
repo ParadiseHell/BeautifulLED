@@ -25,6 +25,7 @@ public class UDPListenService extends Service {
         return binder;
     }
 
+    @SuppressWarnings("WeakerAccess")
     class UDPReceiveBinder  extends Binder{
         private UDPHandler udpHandler;
 

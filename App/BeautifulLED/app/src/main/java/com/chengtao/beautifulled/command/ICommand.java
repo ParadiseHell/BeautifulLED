@@ -10,6 +10,7 @@ public abstract class ICommand {
         this.commandContent = commandContent;
     }
     abstract protected CommandType getCommandType();
+    @SuppressWarnings({"SpellCheckingInspection", "WeakerAccess"})
     protected enum CommandType{
         WIFISSID,
         WIFIPASSWORD,
@@ -22,7 +23,7 @@ public abstract class ICommand {
     public String getCommand(){
         switch (getCommandType()){
             case WIFISSID:
-                return BeautifulLed.getWifiSsid() + commandContent + BeautifulLed.getCommandEnd();
+                return BeautifulLed.getWifiSSId() + commandContent + BeautifulLed.getCommandEnd();
             case WIFIPASSWORD:
                 return BeautifulLed.getWifiPassword() + commandContent + BeautifulLed.getCommandEnd();
             case WIFIIP:

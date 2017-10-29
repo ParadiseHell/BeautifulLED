@@ -11,5 +11,5 @@ public interface UDPHandlerInterface {
     void sendInitFailMessage(Exception e);
     void sendFailMessage(int id,IOException e);
     void sendSuccessMessage(int id);
-    void sendRecieveMessage(String msg);
+    void sendReceiveMessage(String msg);
 }

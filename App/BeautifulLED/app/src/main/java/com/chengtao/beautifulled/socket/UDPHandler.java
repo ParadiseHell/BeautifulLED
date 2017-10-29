@@ -10,6 +10,7 @@ import java.io.IOException;
  * Created by ChengTao on 2016-11-07.
  */
 
+@SuppressWarnings("WeakerAccess")
 public class UDPHandler implements UDPHandlerInterface{
     //----------------------常量
     private static final int INIT_FAIL = 1;
@@ -46,12 +47,12 @@ public class UDPHandler implements UDPHandlerInterface{
     }
 
     @Override
-    public void sendRecieveMessage(String msg) {
+    public void sendReceiveMessage(String msg) {
 
     }
 
-    public void handelMessage(Message message){
-        Object response[] = null;
+    private void handelMessage(Message message){
+        Object response[];
         switch (message.what){
             case INIT_FAIL:
                 response = (Object[]) message.obj;
@@ -87,13 +88,12 @@ public class UDPHandler implements UDPHandlerInterface{
     }
 
     private Message obtainMessage(int id,Object data){
-        Message message = Message.obtain(mHandler,id,data);
-        return message;
+        return Message.obtain(mHandler,id,data);
     }
 
-    class ResponseHandler extends Handler{
+    private class ResponseHandler extends Handler{
         private UDPHandler handler;
-        public ResponseHandler(Looper looper,UDPHandler handler){
+        ResponseHandler(Looper looper, UDPHandler handler){
             super(looper);
             this.handler = handler;
         }

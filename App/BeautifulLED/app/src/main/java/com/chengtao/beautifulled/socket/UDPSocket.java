@@ -41,7 +41,6 @@ public class UDPSocket {
             setNull();
             socket = new DatagramSocket();
             address = InetAddress.getByName(ip);
-            Log.e("TAG",ip+"------"+port);
             this.port  = port;
             if (socket != null && address != null  && port > 0){
                 isInit = true;
@@ -60,7 +59,6 @@ public class UDPSocket {
                 @Override
                 public void run() {
                     packet = new DatagramPacket(cmd.getBytes(), cmd.length(), address, port);
-                    Log.e("TAG",cmd);
                     try {
                         socket.send(packet);
                         mHandler.sendSuccessMessage(id);
