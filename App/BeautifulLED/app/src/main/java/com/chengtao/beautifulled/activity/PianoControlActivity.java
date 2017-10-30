@@ -125,6 +125,12 @@ public class PianoControlActivity extends BaseActivity implements View.OnClickLi
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        Log.e("TAG","onResume");
+    }
+
+    @Override
     protected boolean isOrientationLandscape() {
         return true;
     }
