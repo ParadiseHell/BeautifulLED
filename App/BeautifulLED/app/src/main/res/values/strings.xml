@@ -1,9 +1,15 @@
 <resources>
-    <string name="app_name">PianoAurora</string>
-    <string name="send">SEND</string>
-    <string name="write_some_command">write some command</string>
-    <string name="write_service_ip">192.168.4.1</string>
-    <string name="init">INIT</string>
-    <string name="tv_loading_aduio">正在加载音频，请稍等~~</string>
-    <string name="image">image</string>
+  <string name="app_name">PianoAurora</string>
+  <string name="send">SEND</string>
+  <string name="write_some_command">write some command</string>
+  <string name="write_service_ip">192.168.4.1</string>
+  <string name="init">INIT</string>
+  <string name="tv_loading_aduio">正在加载音频，请稍等~~</string>
+  <string name="image">image</string>
+  <string name="load_success">加载音频成功,开始你的炫酷之旅吧~~</string>
+  <string name="load_fail">加载音频失败了诶，试试重新打开应用吧</string>
+  <string name="auto_play">开始自动播放%1$s~~</string>
+  <string name="music_list">音乐列表</string>
+  <string name="add_music">添加音乐</string>
+  <string name="about">关于</string>
 </resources>

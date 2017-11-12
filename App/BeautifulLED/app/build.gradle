@@ -19,9 +19,13 @@ android {
     }
     productFlavors {
     }
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_1_8
+    targetCompatibility JavaVersion.VERSION_1_8
+  }
 }
 
 dependencies {
-    implementation 'com.github.ParadiseHell:PianoView:1.0.0'
-    implementation 'com.dinuscxj:circleprogressbar:1.1.1'
+  implementation 'com.github.ParadiseHell:PianoView:1.0.1'
+  implementation 'com.dinuscxj:circleprogressbar:1.1.1'
 }

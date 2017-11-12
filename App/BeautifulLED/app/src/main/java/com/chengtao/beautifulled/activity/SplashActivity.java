@@ -26,13 +26,11 @@ public class SplashActivity extends BaseActivity {
   }
 
   @Override protected void initData() {
-    mHandler.postDelayed(new Runnable() {
-      @Override public void run() {
-        PianoControlActivity.invoke(SplashActivity.this);
-        SplashActivity.this.overridePendingTransition(android.R.anim.fade_out,
-            android.R.anim.fade_in);
-        SplashActivity.this.finish();
-      }
+    mHandler.postDelayed(() -> {
+      PianoControlActivity.invoke(SplashActivity.this);
+      SplashActivity.this.overridePendingTransition(android.R.anim.fade_out,
+          android.R.anim.fade_in);
+      SplashActivity.this.finish();
     }, DELAY_TIME);
   }
 
