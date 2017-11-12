@@ -12,4 +12,16 @@
   <string name="music_list">音乐列表</string>
   <string name="add_music">添加音乐</string>
   <string name="about">关于</string>
+  <string name="tv_music_list">乐谱列表</string>
+  <string name="file_not_exist">文件不存在</string>
+  <string name="read_file_exception">读取配置文件出错</string>
+  <string name="config_file_wrong">配置文件有问题</string>
+  <string name="tune_length_not_one">音调不正确</string>
+  <string name="tune_not_in_range">音调超出范围</string>
+  <string name="frequency_not_number">频率不是数字</string>
+  <string name="frequency_not_in_range">频率超出范围</string>
+  <string name="no_music_name">配置文件没有名称</string>
+  <string name="music_note_config_wrong">音符节点{ %1$s }配置有问题</string>
+  <string name="file_is_directory">请选择文件</string>
+  <string name="file_too_big">文件过大</string>
 </resources>

@@ -26,6 +26,6 @@ android {
 }
 
 dependencies {
-  implementation 'com.github.ParadiseHell:PianoView:1.0.1'
+  implementation 'com.github.ParadiseHell:PianoView:1.0.2'
   implementation 'com.dinuscxj:circleprogressbar:1.1.1'
 }

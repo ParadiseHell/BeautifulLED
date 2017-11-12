@@ -4,40 +4,61 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import com.chengtao.beautifulled.R;
+import com.chengtao.beautifulled.adapter.MusicAdapter;
 import com.chengtao.beautifulled.command.BeautifulLed;
 import com.chengtao.beautifulled.command.LEDPositionCommand;
+import com.chengtao.beautifulled.database.dao.MusicDao;
+import com.chengtao.beautifulled.database.impl.MusicDaoImpl;
+import com.chengtao.beautifulled.entity.Music;
 import com.chengtao.beautifulled.receiver.WifiStateReceiver;
 import com.chengtao.beautifulled.utils.PxDpUtils;
+import com.chengtao.pianoview.entity.AutoPlayEntity;
 import com.chengtao.pianoview.entity.Piano;
 import com.chengtao.pianoview.listener.OnLoadAudioListener;
 import com.chengtao.pianoview.listener.OnPianoAutoPlayListener;
 import com.chengtao.pianoview.listener.OnPianoListener;
+import com.chengtao.pianoview.utils.AutoPlayUtils;
+import com.chengtao.pianoview.utils.PianoConvertUtils;
 import com.chengtao.pianoview.view.PianoView;
 import com.dinuscxj.progressbar.CircleProgressBar;
+import java.io.File;
+import java.io.FileInputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 钢琴控制界面
  */
 public class PianoControlActivity extends BaseActivity
     implements View.OnClickListener, WifiStateReceiver.OnWifiStateListener, OnPianoListener,
-    OnPianoAutoPlayListener, SeekBar.OnSeekBarChangeListener, OnLoadAudioListener {
+    OnPianoAutoPlayListener, SeekBar.OnSeekBarChangeListener, OnLoadAudioListener,
+    ListView.OnItemClickListener {
   //--------------常量
+  private static final long MAX_FILE_SIZE = 100 * 1024;
   private static final int FILE_REQUEST_CODE = 1;
   //钢琴视图图片总的宽度
   private static final int IMAGE_PIANO_BAR_TOTAL_WIDTH = 592;
@@ -56,6 +77,9 @@ public class PianoControlActivity extends BaseActivity
   private TextView tvMusicList;
   private TextView tvAddMusic;
   private TextView tvAbout;
+  private PopupWindow musicListPopupWindow;
+  private ListView lvMusic;
+  private MusicAdapter adapter;
   //--------------指令
   private LEDPositionCommand ledPositionCommand;
   //对话框
@@ -64,6 +88,11 @@ public class PianoControlActivity extends BaseActivity
   private WifiStateReceiver receiver;
   //左右两个按键增加和减少的进度值
   private int scrollProgress = 0;
+  //----数据库
+  private MusicDao musicDao;
+  //----其他
+  private List<Music> musicList = new ArrayList<>();
+  private Map<String, List<AutoPlayEntity>> musicMap = new HashMap<>();
 
   @Override protected int getLayoutId() {
     return R.layout.activity_piano_control;
@@ -92,9 +121,30 @@ public class PianoControlActivity extends BaseActivity
     morePopupWindow = new PopupWindow(moreView, ViewGroup.LayoutParams.WRAP_CONTENT,
         ViewGroup.LayoutParams.WRAP_CONTENT, true);
     morePopupWindow.setBackgroundDrawable(new ColorDrawable());
+    //
+    @SuppressLint("InflateParams") View musicListView =
+        LayoutInflater.from(this).inflate(R.layout.popupwindow_music_list, null, false);
+    lvMusic = musicListView.findViewById(R.id.lv_music);
+    musicListPopupWindow = new PopupWindow(musicListView, ViewGroup.LayoutParams.WRAP_CONTENT,
+        ViewGroup.LayoutParams.MATCH_PARENT, true);
   }
 
   @Override protected void initData() {
+    musicDao = new MusicDaoImpl();
+    if (musicDao.getMusicCount() == 0) {
+      AssetManager assetManager = getAssets();
+      if (assetManager != null) {
+        try {
+          for (String name : assetManager.list("music")) {
+            Object[] result = PianoConvertUtils.convertByInputStream(
+                assetManager.open("music" + File.separator + name));
+            musicDao.insertMusic((String) result[0], (String) result[1]);
+          }
+        } catch (Throwable throwable) {
+          handleConfigError(throwable);
+        }
+      }
+    }
     //-------------初始化Socket
     initSocket(BeautifulLed.WIFI_HOST_IP, BeautifulLed.WIFI_HOST_PORT);
     //-------------初始化指令
@@ -103,6 +153,54 @@ public class PianoControlActivity extends BaseActivity
     initReceiver();
     //
     seekBar.setProgress(50);
+    //
+    adapter = new MusicAdapter(this, musicList);
+    lvMusic.setAdapter(adapter);
+  }
+
+  /**
+   * 处理配置文件错误
+   *
+   * @param throwable 异常
+   */
+  private void handleConfigError(Throwable throwable) {
+    if (throwable != null && throwable.getMessage() != null) {
+      switch (throwable.getMessage()) {
+        case PianoConvertUtils.Error.FILE_NOT_EXIT:
+          showToast(getString(R.string.file_not_exist));
+          break;
+        case PianoConvertUtils.Error.READ_FILE_EXCEPTION:
+          showToast(getString(R.string.read_file_exception));
+          break;
+        case PianoConvertUtils.Error.CONFIG_FILE_WRONG:
+          showToast(getString(R.string.config_file_wrong));
+          break;
+        case PianoConvertUtils.Error.TUNE_LENGTH_NOT_ONE:
+          showToast(getString(R.string.tune_length_not_one));
+          break;
+        case PianoConvertUtils.Error.TUNE_NOT_IN_RANGE:
+          showToast(getString(R.string.tune_not_in_range));
+          break;
+        case PianoConvertUtils.Error.FREQUENCY_NOT_NUMBER:
+          showToast(getString(R.string.frequency_not_number));
+          break;
+        case PianoConvertUtils.Error.FREQUENCY_NOT_IN_RANGE:
+          showToast(getString(R.string.frequency_not_in_range));
+          break;
+        case PianoConvertUtils.Error.NO_MUSIC_NAME:
+          showToast(getString(R.string.no_music_name));
+          break;
+        case PianoConvertUtils.Error.MUSIC_NOTE_CONFIG_WRONG:
+          String message = throwable.getMessage();
+          String note = message.substring(message.lastIndexOf(":") + 1);
+          showToast(getString(R.string.music_note_config_wrong, note));
+          break;
+        default:
+          Log.e("TAG", "handleConfigError(PianoControlActivity.java:" + Thread.currentThread()
+              .getStackTrace()[2].getLineNumber() + ")" + "throwable:" + throwable.getMessage());
+          break;
+      }
+    }
   }
 
   private void initReceiver() {
@@ -128,9 +226,15 @@ public class PianoControlActivity extends BaseActivity
       lp.alpha = 1f;
       ((Activity) mContext).getWindow().setAttributes(lp);
     });
+    musicListPopupWindow.setOnDismissListener(() -> {
+      WindowManager.LayoutParams lp = ((Activity) mContext).getWindow().getAttributes();
+      lp.alpha = 1f;
+      ((Activity) mContext).getWindow().setAttributes(lp);
+    });
     tvMusicList.setOnClickListener(this);
     tvAddMusic.setOnClickListener(this);
     tvAbout.setOnClickListener(this);
+    lvMusic.setOnItemClickListener(this);
   }
 
   @Override protected void onResume() {
@@ -314,6 +418,20 @@ public class PianoControlActivity extends BaseActivity
         }
         break;
       case R.id.tv_music_list:
+        morePopupWindow.dismiss();
+        if (musicList.size() == 0) {
+          List<Music> list = musicDao.queryAllMusics();
+          if (list != null) {
+            musicList.addAll(list);
+          }
+          adapter.notifyDataSetChanged();
+        }
+        if (musicListPopupWindow != null) {
+          WindowManager.LayoutParams lp = this.getWindow().getAttributes();
+          lp.alpha = 0.5f;//设置阴影透明度
+          this.getWindow().setAttributes(lp);
+          musicListPopupWindow.showAtLocation(getWindow().getDecorView(), Gravity.CENTER, 0, 0);
+        }
         break;
       case R.id.tv_add_music:
         Intent intent = new Intent();
@@ -340,15 +458,78 @@ public class PianoControlActivity extends BaseActivity
   @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
     switch (requestCode) {
       case FILE_REQUEST_CODE:
+        if (morePopupWindow != null) {
+          morePopupWindow.dismiss();
+        }
         if (resultCode == RESULT_OK) {
-          if (morePopupWindow != null) {
-            morePopupWindow.dismiss();
+          if (data != null) {
+            Uri uri = data.getData();
+            if (uri != null) {
+              try {
+                File file = new File(uri.toString());
+                Log.e("TAG", "onActivityResult(PianoControlActivity.java:"
+                    + Thread.currentThread()
+                    .getStackTrace()[2].getLineNumber()
+                    + ")"
+                    + "uri:"
+                    + uri.toString()
+                    + "--path:"
+                    + uri.getPath());
+                if (!file.exists()) {
+                  showToast(getString(R.string.file_not_exist));
+                  return;
+                }
+                if (file.isDirectory()) {
+                  showToast(getString(R.string.file_is_directory));
+                  return;
+                }
+                if (file.length() > MAX_FILE_SIZE) {
+                  showToast(getString(R.string.file_too_big));
+                  return;
+                }
+                Object[] result = PianoConvertUtils.convertByInputStream(new FileInputStream(file));
+                String name = (String) result[0];
+                String configString = (String) result[1];
+                Music music = new Music();
+                music.setName(name);
+                music.setConfigString(configString);
+                musicDao.insertMusic(name, configString);
+              } catch (Throwable throwable) {
+                handleConfigError(throwable);
+              }
+            }
           }
         }
         break;
       default:
         super.onActivityResult(requestCode, resultCode, data);
         break;
+    }
+  }
+
+  @Override public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+    Log.e("TAG", "onItemClick(PianoControlActivity.java:" + Thread.currentThread()
+        .getStackTrace()[2].getLineNumber() + ")" + "");
+    if (musicListPopupWindow != null) {
+      musicListPopupWindow.dismiss();
+    }
+    Music music = musicList.get(position);
+    if (music != null) {
+      if (!musicMap.containsKey(music.getName())) {
+        try {
+          Object[] result = PianoConvertUtils.convertByConfigString(music.getConfigString());
+          String name = (String) result[0];
+          @SuppressWarnings("unchecked") ArrayList<AutoPlayEntity> keys =
+              AutoPlayUtils.convertToAutoPlayEntityList(
+                  (List<PianoConvertUtils.PianoKey>) result[2]);
+          if (!TextUtils.isEmpty(name) && keys != null) {
+            musicMap.put(name, keys);
+            pianoView.autoPlay(keys);
+          }
+        } catch (Throwable throwable) {
+          handleConfigError(throwable);
+        }
+      }
     }
   }
 }
