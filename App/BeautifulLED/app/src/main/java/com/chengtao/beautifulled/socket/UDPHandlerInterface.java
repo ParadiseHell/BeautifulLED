@@ -7,9 +7,13 @@ import java.io.IOException;
  */
 
 public interface UDPHandlerInterface {
-    void sendInitSuccessMessage();
-    void sendInitFailMessage(Exception e);
-    void sendFailMessage(int id,IOException e);
-    void sendSuccessMessage(int id);
-    void sendReceiveMessage(String msg);
+  void sendInitSuccessMessage();
+
+  void sendInitFailMessage(Exception e);
+
+  void sendFailMessage(int id, IOException e);
+
+  void sendSuccessMessage(int id);
+
+  void sendReceiveMessage(String msg);
 }

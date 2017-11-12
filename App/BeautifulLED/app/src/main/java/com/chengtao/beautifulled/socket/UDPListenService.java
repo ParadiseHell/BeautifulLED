@@ -11,30 +11,26 @@ import android.support.annotation.Nullable;
  */
 
 public class UDPListenService extends Service {
-    private UDPReceiveBinder binder;
+  private UDPReceiveBinder binder;
 
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        binder = new UDPReceiveBinder();
-        return super.onStartCommand(intent, flags, startId);
+  @Override public int onStartCommand(Intent intent, int flags, int startId) {
+    binder = new UDPReceiveBinder();
+    return super.onStartCommand(intent, flags, startId);
+  }
+
+  @Nullable @Override public IBinder onBind(Intent intent) {
+    return binder;
+  }
+
+  @SuppressWarnings("WeakerAccess") class UDPReceiveBinder extends Binder {
+    private UDPHandler udpHandler;
+
+    public void setUdpHandler(UDPHandler udpHandler) {
+      this.udpHandler = udpHandler;
     }
 
-    @Nullable
-    @Override
-    public IBinder onBind(Intent intent) {
-        return binder;
+    public void startToListen() {
+
     }
-
-    @SuppressWarnings("WeakerAccess")
-    class UDPReceiveBinder  extends Binder{
-        private UDPHandler udpHandler;
-
-        public void setUdpHandler(UDPHandler udpHandler) {
-            this.udpHandler = udpHandler;
-        }
-
-        public void startToListen(){
-
-        }
-    }
+  }
 }

@@ -5,9 +5,13 @@ package com.chengtao.beautifulled.socket;
  */
 
 public interface UDPListener {
-    void onInitFail(Exception e);
-    void onInitSuccess();
-    void onSuccess(int id);
-    void onFail(int id,Exception e);
-    void onReceive(int id,String response);
+  void onInitFail(Exception e);
+
+  void onInitSuccess();
+
+  void onSuccess(int id);
+
+  void onFail(int id, Exception e);
+
+  void onReceive(int id, String response);
 }
