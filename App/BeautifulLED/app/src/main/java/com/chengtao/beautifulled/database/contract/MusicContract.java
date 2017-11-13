@@ -28,7 +28,9 @@ public class MusicContract {
       + " )";
 
   public static String insert(String name, String configString) {
-    if (TextUtils.isEmpty(name) || TextUtils.isEmpty(configString)) {
+    String mName = removeStringStartAndEndQuotes(name);
+    String mConfigString = removeStringStartAndEndQuotes(configString);
+    if (TextUtils.isEmpty(mName) || TextUtils.isEmpty(mConfigString)) {
       return null;
     }
     return "INSERT INTO "
@@ -38,16 +40,20 @@ public class MusicContract {
         + " , "
         + FIELD_CONFIG_STRING
         + " ) VALUES ( "
-        + name
+        + "\'"
+        + mName
+        + "\'"
         + " , "
         + "\'"
-        + configString
+        + mConfigString
         + "\'"
         + " )";
   }
 
   public static String update(String name, String configString) {
-    if (TextUtils.isEmpty(name) || TextUtils.isEmpty(configString)) {
+    String mName = removeStringStartAndEndQuotes(name);
+    String mConfigString = removeStringStartAndEndQuotes(configString);
+    if (TextUtils.isEmpty(mName) || TextUtils.isEmpty(mConfigString)) {
       return null;
     }
     return "UPDATE "
@@ -56,13 +62,14 @@ public class MusicContract {
         + FIELD_CONFIG_STRING
         + " = "
         + "\'"
-        + configString
+        + mConfigString
         + "\'"
         + " WHERE "
-        + TABLE_NAME
+        + FIELD_NAME
         + " = "
-        + name
-        + " )";
+        + "\'"
+        + mName
+        + "\'";
   }
 
   public static String queryAll() {
@@ -85,6 +92,20 @@ public class MusicContract {
       if (list.size() > 0) {
         return list;
       }
+    }
+    return null;
+  }
+
+  private static String removeStringStartAndEndQuotes(String string) {
+    if (!TextUtils.isEmpty(string) && !string.equals("\"") && string.length() > 1) {
+      String newString = string;
+      if (newString.substring(0, 1).equals("\"")) {
+        newString = newString.substring(1);
+      }
+      if (newString.substring(newString.length() - 1).equals("\"")) {
+        newString = newString.substring(0, newString.length() - 1);
+      }
+      return newString;
     }
     return null;
   }

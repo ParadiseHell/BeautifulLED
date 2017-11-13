@@ -21,7 +21,10 @@
   <string name="frequency_not_number">频率不是数字</string>
   <string name="frequency_not_in_range">频率超出范围</string>
   <string name="no_music_name">配置文件没有名称</string>
-  <string name="music_note_config_wrong">音符节点{ %1$s }配置有问题</string>
+  <string name="music_note_config_wrong">音符节点[ %1$s ]配置有问题</string>
   <string name="file_is_directory">请选择文件</string>
   <string name="file_too_big">文件过大</string>
+  <string name="auto_paly_end">自动播放结束</string>
+  <string name="unknown_error">未知错误</string>
+  <string name="add_music_success">添加音乐成功</string>
 </resources>

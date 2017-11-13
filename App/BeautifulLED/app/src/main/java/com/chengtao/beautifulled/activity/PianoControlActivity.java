@@ -33,6 +33,7 @@ import com.chengtao.beautifulled.database.dao.MusicDao;
 import com.chengtao.beautifulled.database.impl.MusicDaoImpl;
 import com.chengtao.beautifulled.entity.Music;
 import com.chengtao.beautifulled.receiver.WifiStateReceiver;
+import com.chengtao.beautifulled.utils.FileUtils;
 import com.chengtao.beautifulled.utils.PxDpUtils;
 import com.chengtao.pianoview.entity.AutoPlayEntity;
 import com.chengtao.pianoview.entity.Piano;
@@ -58,7 +59,7 @@ public class PianoControlActivity extends BaseActivity
     OnPianoAutoPlayListener, SeekBar.OnSeekBarChangeListener, OnLoadAudioListener,
     ListView.OnItemClickListener {
   //--------------常量
-  private static final long MAX_FILE_SIZE = 100 * 1024;
+  private static final long MAX_FILE_SIZE = 20 * 1024;
   private static final int FILE_REQUEST_CODE = 1;
   //钢琴视图图片总的宽度
   private static final int IMAGE_PIANO_BAR_TOTAL_WIDTH = 592;
@@ -91,6 +92,7 @@ public class PianoControlActivity extends BaseActivity
   //----数据库
   private MusicDao musicDao;
   //----其他
+  private String currentMusicName;
   private List<Music> musicList = new ArrayList<>();
   private Map<String, List<AutoPlayEntity>> musicMap = new HashMap<>();
 
@@ -131,7 +133,7 @@ public class PianoControlActivity extends BaseActivity
 
   @Override protected void initData() {
     musicDao = new MusicDaoImpl();
-    if (musicDao.getMusicCount() == 0) {
+    if (musicDao.getMusicCount() < 3) {//默认3个乐谱
       AssetManager assetManager = getAssets();
       if (assetManager != null) {
         try {
@@ -190,16 +192,20 @@ public class PianoControlActivity extends BaseActivity
         case PianoConvertUtils.Error.NO_MUSIC_NAME:
           showToast(getString(R.string.no_music_name));
           break;
-        case PianoConvertUtils.Error.MUSIC_NOTE_CONFIG_WRONG:
-          String message = throwable.getMessage();
-          String note = message.substring(message.lastIndexOf(":") + 1);
-          showToast(getString(R.string.music_note_config_wrong, note));
-          break;
         default:
-          Log.e("TAG", "handleConfigError(PianoControlActivity.java:" + Thread.currentThread()
-              .getStackTrace()[2].getLineNumber() + ")" + "throwable:" + throwable.getMessage());
+          if (throwable.getMessage().contains(PianoConvertUtils.Error.MUSIC_NOTE_CONFIG_WRONG)) {
+            String message = throwable.getMessage();
+            String note = message.substring(message.lastIndexOf(":") + 1);
+            showToast(getString(R.string.music_note_config_wrong, note));
+          } else {
+            showToast(getString(R.string.unknown_error));
+            Log.e("TAG", "handleConfigError(PianoControlActivity.java:" + Thread.currentThread()
+                .getStackTrace()[2].getLineNumber() + ")" + "throwable:" + throwable.getMessage());
+          }
           break;
       }
+    } else {
+      showToast(getString(R.string.unknown_error));
     }
   }
 
@@ -418,7 +424,9 @@ public class PianoControlActivity extends BaseActivity
         }
         break;
       case R.id.tv_music_list:
-        morePopupWindow.dismiss();
+        if (morePopupWindow != null) {
+          morePopupWindow.dismiss();
+        }
         if (musicList.size() == 0) {
           List<Music> list = musicDao.queryAllMusics();
           if (list != null) {
@@ -440,6 +448,9 @@ public class PianoControlActivity extends BaseActivity
         startActivityForResult(intent, FILE_REQUEST_CODE);
         break;
       case R.id.tv_about:
+        if (morePopupWindow != null) {
+          morePopupWindow.dismiss();
+        }
         break;
       default:
         break;
@@ -447,11 +458,14 @@ public class PianoControlActivity extends BaseActivity
   }
 
   @Override public void onPianoAutoPlayStart() {
-
+    if (!TextUtils.isEmpty(currentMusicName)) {
+      showToast(getString(R.string.auto_play, currentMusicName));
+    }
   }
 
   @Override public void onPianoAutoPlayEnd() {
     //播放完成后,钢琴控件可控
+    showToast(getString(R.string.auto_paly_end));
     pianoView.setCanPress(true);
   }
 
@@ -466,34 +480,47 @@ public class PianoControlActivity extends BaseActivity
             Uri uri = data.getData();
             if (uri != null) {
               try {
-                File file = new File(uri.toString());
-                Log.e("TAG", "onActivityResult(PianoControlActivity.java:"
-                    + Thread.currentThread()
-                    .getStackTrace()[2].getLineNumber()
-                    + ")"
-                    + "uri:"
-                    + uri.toString()
-                    + "--path:"
-                    + uri.getPath());
-                if (!file.exists()) {
+                String path = FileUtils.getPath(mContext, uri);
+                if (!TextUtils.isEmpty(path)) {
+                  File file = new File(path);
+                  if (!file.exists()) {
+                    showToast(getString(R.string.file_not_exist));
+                    return;
+                  }
+                  if (file.isDirectory()) {
+                    showToast(getString(R.string.file_is_directory));
+                    return;
+                  }
+                  if (file.length() > MAX_FILE_SIZE) {
+                    showToast(getString(R.string.file_too_big));
+                    return;
+                  }
+                  Object[] result =
+                      PianoConvertUtils.convertByInputStream(new FileInputStream(file));
+                  String name = (String) result[0];
+                  String configString = (String) result[1];
+                  Music music = new Music();
+                  music.setName(name);
+                  music.setConfigString(configString);
+                  //更新列表
+                  boolean updated = false;
+                  for (int i = 0; i < musicList.size(); i++) {
+                    if (name.equals(musicList.get(i).getName())) {
+                      musicList.set(i, music);
+                      updated = true;
+                      break;
+                    }
+                  }
+                  if (!updated) {
+                    musicList.add(music);
+                  }
+                  adapter.notifyDataSetChanged();
+                  //数据库
+                  musicDao.insertMusic(name, configString);
+                  showToast(getString(R.string.add_music_success));
+                } else {
                   showToast(getString(R.string.file_not_exist));
-                  return;
                 }
-                if (file.isDirectory()) {
-                  showToast(getString(R.string.file_is_directory));
-                  return;
-                }
-                if (file.length() > MAX_FILE_SIZE) {
-                  showToast(getString(R.string.file_too_big));
-                  return;
-                }
-                Object[] result = PianoConvertUtils.convertByInputStream(new FileInputStream(file));
-                String name = (String) result[0];
-                String configString = (String) result[1];
-                Music music = new Music();
-                music.setName(name);
-                music.setConfigString(configString);
-                musicDao.insertMusic(name, configString);
               } catch (Throwable throwable) {
                 handleConfigError(throwable);
               }
@@ -508,8 +535,6 @@ public class PianoControlActivity extends BaseActivity
   }
 
   @Override public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-    Log.e("TAG", "onItemClick(PianoControlActivity.java:" + Thread.currentThread()
-        .getStackTrace()[2].getLineNumber() + ")" + "");
     if (musicListPopupWindow != null) {
       musicListPopupWindow.dismiss();
     }
@@ -524,12 +549,13 @@ public class PianoControlActivity extends BaseActivity
                   (List<PianoConvertUtils.PianoKey>) result[2]);
           if (!TextUtils.isEmpty(name) && keys != null) {
             musicMap.put(name, keys);
-            pianoView.autoPlay(keys);
           }
         } catch (Throwable throwable) {
           handleConfigError(throwable);
         }
       }
+      currentMusicName = music.getName();
+      pianoView.autoPlay(musicMap.get(music.getName()));
     }
   }
 }
