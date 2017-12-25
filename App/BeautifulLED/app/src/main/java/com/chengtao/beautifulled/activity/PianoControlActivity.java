@@ -447,11 +447,7 @@ public class PianoControlActivity extends BaseActivity
         if (morePopupWindow != null) {
           morePopupWindow.dismiss();
         }
-        musicList.clear();
-        List<Music> list = musicDao.queryAllMusics();
-        if (list != null) {
-          musicList.addAll(list);
-        }
+        addMusicList();
         adapter.notifyDataSetChanged();
         if (musicListPopupWindow != null) {
           WindowManager.LayoutParams lp = this.getWindow().getAttributes();
@@ -474,6 +470,15 @@ public class PianoControlActivity extends BaseActivity
         break;
       default:
         break;
+    }
+  }
+
+  private void addMusicList() {
+    if (musicList.isEmpty()) {
+      List<Music> list = musicDao.queryAllMusics();
+      if (list != null) {
+        musicList.addAll(list);
+      }
     }
   }
 
@@ -517,6 +522,7 @@ public class PianoControlActivity extends BaseActivity
                 music.setConfigString(configString);
                 //更新列表
                 boolean updated = false;
+                addMusicList();
                 for (int i = 0; i < musicList.size(); i++) {
                   if (name.equals(musicList.get(i).getName())) {
                     musicList.set(i, music);
