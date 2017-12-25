@@ -1,9 +1,11 @@
 package com.chengtao.beautifulled.activity;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
@@ -11,6 +13,8 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.PowerManager;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
@@ -62,6 +66,7 @@ public class PianoControlActivity extends BaseActivity
   private static final String TAG = "PianoControlActivity";
   private static final long MAX_FILE_SIZE = 20 * 1024;
   private static final int FILE_REQUEST_CODE = 1;
+  private static final int WRITE_EXTERNAL_STORAGE_REQUEST_CODE = 2;
   private static final int SOUND_POOL_MAX_STREAM = 10;
   private static final long WAKELOCK_TIME_OUT = 30 * 60 * 1000L;
   //钢琴视图图片总的宽度
@@ -457,10 +462,14 @@ public class PianoControlActivity extends BaseActivity
         }
         break;
       case R.id.tv_add_music:
-        Intent intent = new Intent();
-        intent.setType("*/*");
-        intent.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(intent, FILE_REQUEST_CODE);
+        if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            == PackageManager.PERMISSION_GRANTED) {
+          chooseConfigFileFromStorage();
+        } else {
+          ActivityCompat.requestPermissions(PianoControlActivity.this,
+              new String[] { Manifest.permission.WRITE_EXTERNAL_STORAGE },
+              WRITE_EXTERNAL_STORAGE_REQUEST_CODE);
+        }
         break;
       case R.id.tv_about:
         if (morePopupWindow != null) {
@@ -471,6 +480,29 @@ public class PianoControlActivity extends BaseActivity
       default:
         break;
     }
+  }
+
+  @Override public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+      @NonNull int[] grantResults) {
+    switch (requestCode) {
+      case WRITE_EXTERNAL_STORAGE_REQUEST_CODE:
+        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+          chooseConfigFileFromStorage();
+        } else {
+          showToast(getString(R.string.ask_permission));
+        }
+        break;
+      default:
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        break;
+    }
+  }
+
+  private void chooseConfigFileFromStorage() {
+    Intent intent = new Intent();
+    intent.setType("*/*");
+    intent.setAction(Intent.ACTION_GET_CONTENT);
+    startActivityForResult(intent, FILE_REQUEST_CODE);
   }
 
   private void addMusicList() {

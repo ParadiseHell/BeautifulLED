@@ -35,4 +35,5 @@
   <string name="developer">程涛 ( 计算机14–1 )</string>
   <string name="project_address"><font color='#000'>项目地址 : </font><a>http://paradisehell.org/2017/03/06/the-fisrt-my-own-project</a></string>
   <string name="config">配置</string>
+  <string name="ask_permission">请赋予权限</string>
 </resources>
