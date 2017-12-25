@@ -207,7 +207,11 @@ public class PianoControlActivity extends BaseActivity
             String note = message.substring(message.lastIndexOf(":") + 1);
             showToast(getString(R.string.music_note_config_wrong, note));
           } else {
-            showToast(getString(R.string.unknown_error));
+            if (throwable.getMessage() != null) {
+              showToast(throwable.getMessage());
+            } else {
+              showToast(getString(R.string.unknown_error));
+            }
             Log.e("TAG", "handleConfigError(PianoControlActivity.java:" + Thread.currentThread()
                 .getStackTrace()[2].getLineNumber() + ")" + "throwable:" + throwable.getMessage());
           }
