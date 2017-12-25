@@ -7,8 +7,8 @@ android {
     applicationId "com.chengtao.beautifulled"
     minSdkVersion 16
     targetSdkVersion 26
-    versionCode 1003
-    versionName "1.0.3"
+    versionCode 1004
+    versionName "1.0.4"
     testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     multiDexEnabled true
   }
@@ -26,6 +26,8 @@ android {
 }
 
 dependencies {
+  implementation 'com.android.support:design:26.1.0'
   implementation 'com.github.ParadiseHell:PianoView:1.0.9'
   implementation 'com.dinuscxj:circleprogressbar:1.1.1'
+  implementation 'us.feras.mdv:markdownview:1.1.0'
 }

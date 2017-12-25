@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.chengtao.beautifulled">
 
   <uses-permission android:name="android.permission.INTERNET"/>
@@ -12,14 +13,17 @@
   <application
       android:name=".App"
       android:allowBackup="true"
+      android:fullBackupContent="@xml/backup_descriptor"
       android:icon="@mipmap/icon"
       android:label="@string/app_name"
       android:supportsRtl="true"
-      android:theme="@style/AppTheme">
+      android:theme="@style/AppTheme"
+      tools:ignore="GoogleAppIndexingWarning">
     <!--闪屏界面-->
     <activity
         android:name=".activity.SplashActivity"
-        android:screenOrientation="portrait">
+        android:screenOrientation="portrait"
+        android:theme="@style/Theme.AppCompat.Light.NoActionBar">
       <intent-filter>
         <action android:name="android.intent.action.MAIN"/>
         <category android:name="android.intent.category.LAUNCHER"/>
@@ -28,9 +32,15 @@
     <!--钢琴控制界面-->
     <activity
         android:name=".activity.PianoControlActivity"
-        android:screenOrientation="landscape"/>
+        android:screenOrientation="landscape"
+        android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
+    <!--关于界面-->
     <activity
         android:name=".activity.AboutActivity"
+        android:screenOrientation="portrait"/>
+    <!--配置界面-->
+    <activity
+        android:name=".activity.ConfigActivity"
         android:screenOrientation="portrait"/>
     <!--WIFI状态广播-->
     <receiver android:name=".receiver.WifiStateReceiver">

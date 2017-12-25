@@ -165,8 +165,6 @@ public class PianoControlActivity extends BaseActivity
     //初始化WIFI状态广播
     initReceiver();
     //
-    seekBar.setProgress(50);
-    //
     adapter = new MusicAdapter(this, musicList);
     lvMusic.setAdapter(adapter);
   }
@@ -345,6 +343,8 @@ public class PianoControlActivity extends BaseActivity
         + (int) PxDpUtils.convertDpToPixel(SEEK_BAR_THUMB_DEFAULT_OFFSET_DP, mContext);
     //设置seek bar拇指图片的偏移
     seekBar.setThumbOffset(seekBarThumbOffset);
+    //
+    seekBar.setProgress(50);
   }
 
   @Override public void onPianoClick(Piano.PianoKeyType type, Piano.PianoVoice voice, int group,
