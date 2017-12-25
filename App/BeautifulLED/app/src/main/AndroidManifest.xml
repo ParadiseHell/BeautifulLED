@@ -7,6 +7,7 @@
   <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
   <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+  <uses-permission android:name="android.permission.WAKE_LOCK"/>
 
   <application
       android:name=".App"
@@ -16,14 +17,21 @@
       android:supportsRtl="true"
       android:theme="@style/AppTheme">
     <!--闪屏界面-->
-    <activity android:name=".activity.SplashActivity">
+    <activity
+        android:name=".activity.SplashActivity"
+        android:screenOrientation="portrait">
       <intent-filter>
         <action android:name="android.intent.action.MAIN"/>
         <category android:name="android.intent.category.LAUNCHER"/>
       </intent-filter>
     </activity>
     <!--钢琴控制界面-->
-    <activity android:name=".activity.PianoControlActivity"/>
+    <activity
+        android:name=".activity.PianoControlActivity"
+        android:screenOrientation="landscape"/>
+    <activity
+        android:name=".activity.AboutActivity"
+        android:screenOrientation="portrait"/>
     <!--WIFI状态广播-->
     <receiver android:name=".receiver.WifiStateReceiver">
     </receiver>

@@ -10,6 +10,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.PowerManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
@@ -59,8 +60,11 @@ public class PianoControlActivity extends BaseActivity
     OnPianoAutoPlayListener, SeekBar.OnSeekBarChangeListener, OnLoadAudioListener,
     ListView.OnItemClickListener {
   //--------------常量
+  private static final String TAG = "PianoControlActivity";
   private static final long MAX_FILE_SIZE = 20 * 1024;
   private static final int FILE_REQUEST_CODE = 1;
+  private static final int SOUND_POOL_MAX_STREAM = 10;
+  private static final long WAKELOCK_TIME_OUT = 30 * 60 * 1000L;
   //钢琴视图图片总的宽度
   private static final int IMAGE_PIANO_BAR_TOTAL_WIDTH = 592;
   //钢琴视图图片左边偏移量（实际的钢琴开始位置）
@@ -95,6 +99,7 @@ public class PianoControlActivity extends BaseActivity
   private String currentMusicName;
   private List<Music> musicList = new ArrayList<>();
   private Map<String, List<AutoPlayEntity>> musicMap = new HashMap<>();
+  private PowerManager.WakeLock wakeLock;
 
   @Override protected int getLayoutId() {
     return R.layout.activity_piano_control;
@@ -103,6 +108,7 @@ public class PianoControlActivity extends BaseActivity
   @Override protected void initView() {
     seekBar = getView(R.id.sb);
     pianoView = getView(R.id.pv);
+    pianoView.setSoundPollMaxStream(SOUND_POOL_MAX_STREAM);
     leftArrow = getView(R.id.iv_left_arrow);
     rightArrow = getView(R.id.iv_right_arrow);
     btnMore = getView(R.id.iv_more);
@@ -129,6 +135,11 @@ public class PianoControlActivity extends BaseActivity
     lvMusic = musicListView.findViewById(R.id.lv_music);
     musicListPopupWindow = new PopupWindow(musicListView, ViewGroup.LayoutParams.WRAP_CONTENT,
         ViewGroup.LayoutParams.MATCH_PARENT, true);
+    //
+    PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
+    if (powerManager != null) {
+      wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
+    }
   }
 
   @Override protected void initData() {
@@ -245,6 +256,16 @@ public class PianoControlActivity extends BaseActivity
 
   @Override protected void onResume() {
     super.onResume();
+    if (wakeLock != null) {
+      wakeLock.acquire(WAKELOCK_TIME_OUT);
+    }
+  }
+
+  @Override protected void onStop() {
+    super.onStop();
+    if (wakeLock != null) {
+      wakeLock.release();
+    }
   }
 
   @Override protected boolean isOrientationLandscape() {
@@ -450,6 +471,7 @@ public class PianoControlActivity extends BaseActivity
       case R.id.tv_about:
         if (morePopupWindow != null) {
           morePopupWindow.dismiss();
+          AboutActivity.invoke(mContext);
         }
         break;
       default:

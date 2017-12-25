@@ -27,4 +27,11 @@
   <string name="auto_paly_end">自动播放结束</string>
   <string name="unknown_error">未知错误</string>
   <string name="add_music_success">添加音乐成功</string>
+  <string name="teacher_hint">指导老师 :\u0020</string>
+  <string name="teacher">刘士营老师</string>
+  <string name="ui_hint">UI :\u0020</string>
+  <string name="ui">孙宇科 ( 动画14–1 )</string>
+  <string name="developer_hint">开发 :\u0020</string>
+  <string name="developer">程涛 ( 计算机14–1 )</string>
+  <string name="project_address"><font color='#000'>项目地址 : </font><a>http://paradisehell.org/2017/03/06/the-fisrt-my-own-project</a></string>
 </resources>
