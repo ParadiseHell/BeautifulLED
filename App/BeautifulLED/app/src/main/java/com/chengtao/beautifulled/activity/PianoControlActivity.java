@@ -34,7 +34,6 @@ import com.chengtao.beautifulled.database.dao.MusicDao;
 import com.chengtao.beautifulled.database.impl.MusicDaoImpl;
 import com.chengtao.beautifulled.entity.Music;
 import com.chengtao.beautifulled.receiver.WifiStateReceiver;
-import com.chengtao.beautifulled.utils.FileUtils;
 import com.chengtao.beautifulled.utils.PxDpUtils;
 import com.chengtao.pianoview.entity.AutoPlayEntity;
 import com.chengtao.pianoview.entity.Piano;
@@ -46,7 +45,7 @@ import com.chengtao.pianoview.utils.PianoConvertUtils;
 import com.chengtao.pianoview.view.PianoView;
 import com.dinuscxj.progressbar.CircleProgressBar;
 import java.io.File;
-import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -207,11 +206,7 @@ public class PianoControlActivity extends BaseActivity
             String note = message.substring(message.lastIndexOf(":") + 1);
             showToast(getString(R.string.music_note_config_wrong, note));
           } else {
-            if (throwable.getMessage() != null) {
-              showToast(throwable.getMessage());
-            } else {
-              showToast(getString(R.string.unknown_error));
-            }
+            showToast(getString(R.string.unknown_error));
             Log.e("TAG", "handleConfigError(PianoControlActivity.java:" + Thread.currentThread()
                 .getStackTrace()[2].getLineNumber() + ")" + "throwable:" + throwable.getMessage());
           }
@@ -452,13 +447,12 @@ public class PianoControlActivity extends BaseActivity
         if (morePopupWindow != null) {
           morePopupWindow.dismiss();
         }
-        if (musicList.size() == 0) {
-          List<Music> list = musicDao.queryAllMusics();
-          if (list != null) {
-            musicList.addAll(list);
-          }
-          adapter.notifyDataSetChanged();
+        musicList.clear();
+        List<Music> list = musicDao.queryAllMusics();
+        if (list != null) {
+          musicList.addAll(list);
         }
+        adapter.notifyDataSetChanged();
         if (musicListPopupWindow != null) {
           WindowManager.LayoutParams lp = this.getWindow().getAttributes();
           lp.alpha = 0.5f;//设置阴影透明度
@@ -506,47 +500,37 @@ public class PianoControlActivity extends BaseActivity
             Uri uri = data.getData();
             if (uri != null) {
               try {
-                String path = FileUtils.getPath(mContext, uri);
-                if (!TextUtils.isEmpty(path)) {
-                  File file = new File(path);
-                  if (!file.exists()) {
-                    showToast(getString(R.string.file_not_exist));
-                    return;
-                  }
-                  if (file.isDirectory()) {
-                    showToast(getString(R.string.file_is_directory));
-                    return;
-                  }
-                  if (file.length() > MAX_FILE_SIZE) {
-                    showToast(getString(R.string.file_too_big));
-                    return;
-                  }
-                  Object[] result =
-                      PianoConvertUtils.convertByInputStream(new FileInputStream(file));
-                  String name = (String) result[0];
-                  String configString = (String) result[1];
-                  Music music = new Music();
-                  music.setName(name);
-                  music.setConfigString(configString);
-                  //更新列表
-                  boolean updated = false;
-                  for (int i = 0; i < musicList.size(); i++) {
-                    if (name.equals(musicList.get(i).getName())) {
-                      musicList.set(i, music);
-                      updated = true;
-                      break;
-                    }
-                  }
-                  if (!updated) {
-                    musicList.add(music);
-                  }
-                  adapter.notifyDataSetChanged();
-                  //数据库
-                  musicDao.insertMusic(name, configString);
-                  showToast(getString(R.string.add_music_success));
-                } else {
+                InputStream is = getContentResolver().openInputStream(uri);
+                if (is == null) {
                   showToast(getString(R.string.file_not_exist));
+                  return;
                 }
+                if (is.available() > MAX_FILE_SIZE) {
+                  showToast(getString(R.string.file_too_big));
+                  return;
+                }
+                Object[] result = PianoConvertUtils.convertByInputStream(is);
+                String name = (String) result[0];
+                String configString = (String) result[1];
+                Music music = new Music();
+                music.setName(name);
+                music.setConfigString(configString);
+                //更新列表
+                boolean updated = false;
+                for (int i = 0; i < musicList.size(); i++) {
+                  if (name.equals(musicList.get(i).getName())) {
+                    musicList.set(i, music);
+                    updated = true;
+                    break;
+                  }
+                }
+                if (!updated) {
+                  musicList.add(music);
+                }
+                adapter.notifyDataSetChanged();
+                //数据库
+                musicDao.insertMusic(name, configString);
+                showToast(getString(R.string.add_music_success));
               } catch (Throwable throwable) {
                 handleConfigError(throwable);
               }
