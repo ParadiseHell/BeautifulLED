@@ -39,6 +39,18 @@ public class MusicDaoImpl implements MusicDao {
     }
   }
 
+  @Override public void deleteMusicByName(String name) {
+    String deleteSQL = MusicContract.delete(name);
+    if (!TextUtils.isEmpty(deleteSQL)) {
+      try {
+        sqLiteUtils.delete(deleteSQL);
+      } catch (Throwable throwable) {
+        Log.e("TAG", "deleteMusicByName(MusicDaoImpl.java:" + Thread.currentThread()
+            .getStackTrace()[2].getLineNumber() + ")" + "");
+      }
+    }
+  }
+
   @Override public int getMusicCount() {
     Cursor cursor = sqLiteUtils.query(MusicContract.queryCount());
     if (cursor != null && cursor.moveToNext()) {

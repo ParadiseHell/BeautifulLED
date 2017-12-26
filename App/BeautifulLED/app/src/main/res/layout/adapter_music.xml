@@ -1,14 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.daimajia.swipe.SwipeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/sl_music"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
+    app:drag_edge="right"
+    app:show_mode="pull_out"
     >
+  <Button
+      android:id="@+id/btn_delete"
+      android:layout_width="100dp"
+      android:layout_height="match_parent"
+      android:background="#FF0014"
+      android:text="@string/delete"
+      android:textColor="@android:color/white"
+      />
   <TextView
       android:id="@+id/tv_name"
       android:layout_width="match_parent"
       android:layout_height="match_parent"
       android:clickable="false"
+      android:ellipsize="end"
+      android:maxLines="1"
       style="@style/TextList"
       />
-</LinearLayout>
+</com.daimajia.swipe.SwipeLayout>

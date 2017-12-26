@@ -50,6 +50,14 @@ public class MusicContract {
         + " )";
   }
 
+  public static String delete(String name) {
+    String mName = removeStringStartAndEndQuotes(name);
+    if (TextUtils.isEmpty(mName)) {
+      return null;
+    }
+    return "DELETE FROM " + TABLE_NAME + " WHERE " + FIELD_NAME + " = \'" + mName + "\'";
+  }
+
   public static String update(String name, String configString) {
     String mName = removeStringStartAndEndQuotes(name);
     String mConfigString = removeStringStartAndEndQuotes(configString);

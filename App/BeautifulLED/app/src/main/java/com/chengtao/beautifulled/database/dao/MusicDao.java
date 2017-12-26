@@ -15,5 +15,7 @@ public interface MusicDao {
 
   void insertMusic(String name, String configString);
 
+  void deleteMusicByName(String name);
+
   int getMusicCount();
 }

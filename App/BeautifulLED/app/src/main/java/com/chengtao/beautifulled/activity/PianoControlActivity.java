@@ -39,6 +39,7 @@ import com.chengtao.beautifulled.database.impl.MusicDaoImpl;
 import com.chengtao.beautifulled.entity.Music;
 import com.chengtao.beautifulled.receiver.WifiStateReceiver;
 import com.chengtao.beautifulled.utils.PxDpUtils;
+import com.chengtao.beautifulled.utils.SpUtils;
 import com.chengtao.pianoview.entity.AutoPlayEntity;
 import com.chengtao.pianoview.entity.Piano;
 import com.chengtao.pianoview.listener.OnLoadAudioListener;
@@ -61,7 +62,7 @@ import java.util.Map;
 public class PianoControlActivity extends BaseActivity
     implements View.OnClickListener, WifiStateReceiver.OnWifiStateListener, OnPianoListener,
     OnPianoAutoPlayListener, SeekBar.OnSeekBarChangeListener, OnLoadAudioListener,
-    ListView.OnItemClickListener {
+    ListView.OnItemClickListener, MusicAdapter.SwipeListener {
   //--------------常量
   private static final String TAG = "PianoControlActivity";
   private static final long MAX_FILE_SIZE = 20 * 1024;
@@ -148,7 +149,8 @@ public class PianoControlActivity extends BaseActivity
 
   @Override protected void initData() {
     musicDao = new MusicDaoImpl();
-    if (musicDao.getMusicCount() < 3) {//默认3个乐谱
+    if (SpUtils.isFirstIn(mContext)) {//第一次进入加载默认乐谱
+      SpUtils.setNotFirstIn(mContext);
       AssetManager assetManager = getAssets();
       if (assetManager != null) {
         try {
@@ -169,7 +171,8 @@ public class PianoControlActivity extends BaseActivity
     //初始化WIFI状态广播
     initReceiver();
     //
-    adapter = new MusicAdapter(this, musicList);
+    adapter = new MusicAdapter(this, musicList, lvMusic);
+    adapter.setSwipeListener(this);
     lvMusic.setAdapter(adapter);
   }
 
@@ -604,6 +607,15 @@ public class PianoControlActivity extends BaseActivity
       }
       currentMusicName = music.getName();
       pianoView.autoPlay(musicMap.get(music.getName()));
+    }
+  }
+
+  @Override public void onDelete(int position) {
+    if (position >= 0 && position < musicList.size()) {
+      Music music = musicList.get(position);
+      musicList.remove(position);
+      adapter.notifyDataSetChanged();
+      musicDao.deleteMusicByName(music.getName());
     }
   }
 }

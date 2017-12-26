@@ -43,6 +43,17 @@ import android.util.Log;
     }
   }
 
+  public void delete(String sql) throws Throwable {
+    if (!TextUtils.isEmpty(sql) && dbHelper != null) {
+      try {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        db.execSQL(sql);
+      } catch (Exception e) {
+        throw e;
+      }
+    }
+  }
+
   public void update(String sql) {
     if (!TextUtils.isEmpty(sql) && dbHelper != null) {
       try {
